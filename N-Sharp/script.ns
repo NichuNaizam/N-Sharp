@@ -1,0 +1,2 @@
+NS.System.PrintLine("Enter your name: ")
+NS.System.PrintLine("Your name is ", NS.System.ReadLine())

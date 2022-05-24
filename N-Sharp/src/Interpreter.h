@@ -14,16 +14,17 @@ public:
 	bool isMathExpression(const string& str);
 	bool isUsingTag(const string& str);
 	bool isFunctionDefinition(const string& str);
+	bool isIfStatement(const string& str);
+	bool isReturnStatement(const string& str);
+	bool isGlobalStatement(const string& str);
 
 	void start(vector<string>& code);
-	void executeLine(const string& line, vector<string> code);
+	boost::any executeLine(const string& line, vector<string> code, int* curIndex);
 
 private:
-	vector<string> code;
 	map<string, boost::any> globalVariables;
 	map<string, boost::any> localVariables;
 	map<string, pair<vector<string>, vector<string>>> functions;
 	string currentLine;
-	bool onFunction = false, insideCurlyBrace = false;
-	int curIndex = 0;
+	int scopeHeight = 0;
 };

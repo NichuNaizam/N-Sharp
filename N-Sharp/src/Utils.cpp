@@ -135,24 +135,23 @@ bool anyAsBool(boost::any& any)
 	}
 }
 
-boost::any getAnyFromParameter(const string& param, Interpreter& interpreter)
+boost::any getAnyFromParameter(const string& input, Interpreter& interpreter)
 {
-	if (param.empty()) return string();
+	string param = input;
 
-	if (count(param, '"') == 2) {
-		return replace(param, "\"", "");
+	if (count(param, '"') >= 2) {
+		int start = (int)param.find_first_of('"') + 1;
+		int end = (int)param.find_last_of('"') - 1;
+		return substring(input, start, end);
 	}
 	else if (interpreter.isFunction(param)) {
-		string functionName = trim(split(param, '(')[0]);
+		string functionName = parseFunctionCall(param);
 		vector<boost::any> params = getParameters(param, interpreter);
 
 		return interpreter.runFunction(functionName, params);
 	}
 	else if (interpreter.isMathExpression(param)) {
 		return evaluateExpression(param, interpreter);
-	}
-	else if (isNumber(param)) {
-		return stoi(param);
 	}
 	else if (param == "true" || param == "false") {
 		bool state = false;
@@ -165,6 +164,9 @@ boost::any getAnyFromParameter(const string& param, Interpreter& interpreter)
 		float f = stof(replace(param, "f", ""));
 		return f;
 	}
+	else if (isNumber(param)) {
+		return stoi(param);
+	}
 	else {
 		return interpreter.getVariable(trim(param));
 	}
@@ -172,9 +174,9 @@ boost::any getAnyFromParameter(const string& param, Interpreter& interpreter)
 
 vector<boost::any> getParameters(const string& str, Interpreter& interpreter) {
 	vector<boost::any> output;
-	string s = trim(replace(split(str, '(')[1], ")", ""));
-	vector<string> arguments = split(s, ',');
-
+	string s = removeParenthesis(trim(str));
+	
+	vector<string> arguments = splitArguments(s);
 	for (const string& arg : arguments) {
 		output.push_back(getAnyFromParameter(arg, interpreter));
 	}
@@ -204,6 +206,57 @@ vector<string> split(const string& str, const char& c) {
 	return words;
 }
 
+vector<string> splitArguments(const string& str)
+{
+	vector<string> output;
+	string s = trim(str);
+
+	int parenthesis = 0;
+	bool doubleQuotes = false;
+	const char splitChar = ',';
+
+	if (count(str, splitChar) == 0) {
+		if (str.empty()) return vector<string>{};
+		else return vector<string>{str};
+	}
+
+	string temp = "";
+	for (int i = 0; i < (int)s.size(); i++) {
+		if (s[i] == '(') {
+			parenthesis++;
+			temp += s[i];
+			continue;
+		}
+		else if (s[i] == ')') {
+			parenthesis--;
+			temp += s[i];
+			continue;
+		}
+		else if (s[i] == '"') {
+			doubleQuotes = !doubleQuotes;
+			temp += s[i];
+			continue;
+		}
+		else if (parenthesis > 0 || doubleQuotes) {
+			temp += s[i];
+		}
+
+		if (parenthesis > 0 || doubleQuotes) continue;
+
+		if (str[i] != splitChar) {
+			temp += s[i];
+		}
+		else {
+			output.push_back(temp);
+			temp.clear();
+		}
+	}
+
+	output.push_back(temp);
+
+	return vector<string>(output);
+}
+
 vector<string> readFromFile(const string& path)
 {
 	vector<string> output;
@@ -227,6 +280,23 @@ vector<string> readFromFile(const string& path)
 string parseUsingTag(const string& str)
 {
 	return trim(replace(replace(str, "using ", ""), ".", "/")) + ".ns";
+}
+
+string parseIfStatement(const string& str)
+{
+	return replace(replace(replace(str, " ", ""), "if(", ""), ")", "");
+}
+
+string parseFunctionCall(const string& str)
+{
+	return trim(split(str, '(')[0]);
+}
+
+string removeParenthesis(const string& str)
+{
+	int start = (int)str.find_first_of('(') + 1;
+	int end = (int)str.find_last_of(')') - 1;
+	return substring(str, start, end);
 }
 
 string replace(const string& str, const string& toReplace, const string& replaceWith) {
@@ -258,6 +328,19 @@ string replace(const string& str, const string& toReplace, const string& replace
 	}
 
 	return output;
+}
+
+string substring(const string& str, int& start, int& end)
+{
+	string s = "";
+
+	for (int i = 0; i < (int)str.size(); i++) {
+		if (i >= start && i <= end) {
+			s += str[i];
+		}
+	}
+
+	return s;
 }
 
 string ltrim(const string& str)
@@ -306,6 +389,25 @@ bool endsWith(const string& str, const string& end)
 	else {
 		return false;
 	}
+}
+
+bool contains(const string& str, const string& content)
+{
+	int sameLetters = 0;
+	for (int i = 0; i < (int)str.size(); i++) {
+		if (str[i] == content[sameLetters]) {
+			sameLetters++;
+
+			if (sameLetters == (int)content.size()) {
+				return true;
+			}
+		}
+		else {
+			sameLetters = 0;
+		}
+	}
+
+	return false;
 }
 
 int count(const string& str, const char& c) {

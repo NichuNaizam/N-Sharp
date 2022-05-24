@@ -162,3 +162,61 @@ float evaluateExpression(const string& exp, Interpreter& interpreter)
 
 	return values.top();
 }
+
+bool evaluateBoolExpression(const string& expression, Interpreter& interpreter)
+{
+	string tokens = replace(expression, " ", "");
+	string filledTokens = "";
+
+	string temp = "";
+	for (int i = 0; i < (int)tokens.size(); i++) {
+		if (tokens[i] != '<' && tokens[i] != '>' && tokens[i] != '=') {
+			temp += tokens[i];
+		}
+		else {
+			if (temp == "true" || temp == "false") {
+				filledTokens += temp;
+				temp.clear();
+			}
+
+			if (!temp.empty()) {
+				boost::any varData = getAnyFromParameter(temp, interpreter);
+				string data = anyAsString(varData);
+				filledTokens += data;
+				temp.clear();
+			}
+
+			filledTokens += tokens[i];
+		}
+	}
+
+	if (!temp.empty()) {
+		boost::any varData = getAnyFromParameter(temp, interpreter);
+		string data = anyAsString(varData);
+		filledTokens += data;
+	}
+
+	tokens = filledTokens;
+
+	if (contains(tokens, "==")) {
+		vector<string> data = split(tokens, '=');
+		if (data[0] == data[2]) return true;
+		else return false;
+	}
+	else if (contains(tokens, ">")) {
+		vector<string> data = split(tokens, '>');
+		if (stof(data[0]) > stof(data[1])) return true;
+		else return false;
+	}
+	else if (contains(tokens, "<")) {
+		vector<string> data = split(tokens, '<');
+		if (stof(data[0]) < stof(data[1])) return true;
+		else return false;
+	}
+	else {
+		cout << "Invalid operator errror: " << expression << endl;
+		exit(0);
+	}
+
+	return false;
+}
