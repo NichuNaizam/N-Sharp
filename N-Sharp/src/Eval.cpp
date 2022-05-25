@@ -214,6 +214,9 @@ bool evaluateBoolExpression(const string& expression, Interpreter& interpreter)
 		else return false;
 	}
 	else {
+		if (tokens == "1") return true;
+		else if (tokens == "0") return false;
+
 		cout << "Invalid operator errror: " << expression << endl;
 		exit(0);
 	}

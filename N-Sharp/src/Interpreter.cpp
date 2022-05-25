@@ -5,7 +5,13 @@
 
 boost::any Interpreter::runFunction(const string& str, vector<boost::any> arguments) {
 	if (startsWith(trim(str), "NS.")) {
-		return NSFunction(str, arguments, *this);
+		boost::any returnValue = NSFunction(str, arguments, *this);
+
+#if PRINT_LOGS
+		logInfo("NS Function " + trim(str) + " has been executed, return value: " + anyAsString(returnValue));
+#endif // PRINT_LOGS
+
+		return returnValue;
 	}
 	else {
 		if (functions.find(trim(str)) != functions.end()) {
@@ -15,32 +21,28 @@ boost::any Interpreter::runFunction(const string& str, vector<boost::any> argume
 			boost::any returnValue = NULL;
 
 			if (arguments.size() < parameters.size() || arguments.size() > parameters.size()) {
-				cout << "Function " << str << " does not take " << (int)arguments.size() << " arguments" << endl;
-				exit(0);
+				logInfo(anyAsString(arguments[0]));
+				logScriptError("Function " + str + " does not take " + to_string(arguments.size()) + " arguments", getLineNo() - 1);
 			}
 
-			if (scopeHeight == 0) localVariables.clear();
 			if ((int)arguments.size() > 0) {
 				for (int i = 0; i < (int)parameters.size(); i++) {
-					localVariables[parameters[i]] = arguments[i];
+					localVariables[scopeHeight + 1][parameters[i]] = arguments[i];
 				}
 			}
 
-			scopeHeight++;
-			for (int i = 0; i < (int)functionCode.size(); i++) {
-				string line = trim(functionCode[i]);
-
-				currentLine = line;
-				returnValue = executeLine(line, functionCode, &i);
-			}
-			scopeHeight--;
+			int functionIndex = functionLineNo[trim(str)];
+			returnValue = start(functionCode, functionIndex);
 			localVariables.clear();
+
+#if PRINT_LOGS
+			logInfo("Function " + trim(str) + " has been executed, return value: " + anyAsString(returnValue));
+#endif // PRINT_LOGS
 
 			return returnValue;
 		}
 		else {
-			cout << "Undefined function error: " << str << endl;
-			exit(0);
+			logScriptError("Undefined function error: ", getLineNo());
 		}
 	}
 
@@ -49,13 +51,13 @@ boost::any Interpreter::runFunction(const string& str, vector<boost::any> argume
 
 boost::any Interpreter::getVariable(const string& name)
 {
-	if (scopeHeight > 0 && localVariables.find(name) != localVariables.end()) {
-		return localVariables.at(name);
+	int variableScope = searchLocalVariables(name);
+	if (scopeHeight > 0 && variableScope != -1) {
+		return localVariables[variableScope][name];
 	}
 
 	if (globalVariables.find(name) == globalVariables.end()) {
-		std::cout << "Variable not defined error: " << name << endl;
-		exit(0);
+		logScriptError("Variable not defined error: " + name, getLineNo());
 	}
 
 	return globalVariables.at(name);
@@ -67,11 +69,28 @@ void Interpreter::setVariable(const string& name, boost::any any, bool forceGlob
 		globalVariables[name] = any;
 	}
 	else if (scopeHeight > 0 && !forceGlobal) {
-		localVariables[name] = any;
+		localVariables[scopeHeight][name] = any;
 	}
 	else {
 		globalVariables[name] = any;
 	}
+
+#if PRINT_LOGS
+	logInfo("Variable " + name + " set to " + anyAsString(any));
+#endif // PRINT_LOGS
+}
+
+int Interpreter::searchLocalVariables(const string& name)
+{
+	if (scopeHeight > 0) {
+		for (int i = 1; i <= scopeHeight; i++) {
+			if (localVariables[i].find(name) != localVariables[i].end()) {
+				return i;
+			}
+		}
+	}
+
+	return -1;
 }
 
 bool Interpreter::isFunction(const string& str) {
@@ -80,7 +99,8 @@ bool Interpreter::isFunction(const string& str) {
 
 bool Interpreter::isVariableDeclaration(const string& str)
 {
-	return startsWith(trim(str), "set ");
+	string predictedVarName = trim(split(replace(str, " ", ""), '=')[0]);
+	return startsWith(trim(str), "var ") || (localVariables[scopeHeight].find(predictedVarName) != localVariables[scopeHeight].end() || globalVariables.find(predictedVarName) != globalVariables.end());
 }
 
 bool Interpreter::isMathExpression(const string& str)
@@ -113,132 +133,141 @@ bool Interpreter::isGlobalStatement(const string& str)
 	return startsWith(trim(str), "global ");
 }
 
-void Interpreter::start(vector<string>& code) {
-	int i = 0;
+bool Interpreter::isWhileStatement(const string& str)
+{
+	return startsWith(trim(str), "while");
+}
 
-	for (i = 0; i < (int)code.size(); i++) {
-		string line = trim(code[i]);
+int Interpreter::getLineNo()
+{
+	return currentIndex;
+}
 
-		currentLine = line;
-		executeLine(line, code, &i);
+boost::any Interpreter::start(vector<string>& code, int statementIndex, bool isMain) {
+	currentIndex = isMain ? 0 : statementIndex + 2;
+	boost::any toReturn = NULL;
+
+	if (!isMain) {
+		scopeHeight++;
 	}
+	
+	for (int i = 0; i < (int)code.size(); i++) {
+		currentIndex++;
+		string line = trim(code[i]);
+		toReturn = executeLine(line, code, &i);
+	}
+
+	if (!isMain) {
+		localVariables[scopeHeight].clear();
+		scopeHeight--;
+	}
+
+	return toReturn;
 }
 
 boost::any Interpreter::executeLine(const string& str, vector<string> code, int* curIndex) {
 	if (startsWith(str, "//") || str.empty()) return NULL;
 
+#if PRINT_LOGS
+	logInfo("Executing line: " + trim(str));
+#endif // PRINT_LOGS
+
+
 	if (isUsingTag(str)) {
 		string path = parseUsingTag(str);
 		vector<string> code = readFromFile(path);
-		start(code);
+
+#if PRINT_LOGS
+		logInfo("Executing using tag, path: " + trim(path));
+#endif // PRINT_LOGS
+
+		start(code, 0, true);
+
+#if PRINT_LOGS
+		logInfo("Completed executing using tag, path: " + trim(path));
+#endif // PRINT_LOGS
+	}
+	else if (isWhileStatement(str)) {
+		string statement = parseWhileStatement(str);
+		vector<string> statementCode = parseCodeInsideBrackets(code, curIndex);
+
+#if PRINT_LOGS
+		logInfo("Executing while loop, statement: " + trim(statement));
+#endif // PRINT_LOGS
+
+		while (evaluateBoolExpression(statement, *this)) {
+			start(statementCode, getLineNo());
+		}
 	}
 	else if (isGlobalStatement(str)) {
 		string variableName = trim(replace(split(str, '=')[0], "global ", ""));
 		boost::any data = getAnyFromParameter(trim(split(str, '=')[1]), *this);
 
+		if (startsWith(trim(str), "global ") && globalVariables.find(variableName) != globalVariables.end()) {
+			logScriptError("Global variable " + variableName + " is already defined", getLineNo());
+		}
+
+#if PRINT_LOGS
+		logInfo("Setting global variable " + trim(variableName));
+#endif // PRINT_LOGS
+
 		setVariable(variableName, data, true);
 	}
 	else if (isReturnStatement(str)) {
-		string data = split(trim(str), ' ')[1];
+		string data = parseReturnStatement(str);
 		*curIndex = (int)code.size();
+
+#if PRINT_LOGS
+		logInfo("Executing return statement, value: " + trim(data));
+#endif // PRINT_LOGS
 
 		return getAnyFromParameter(data, *this);
 	}
 	else if (isIfStatement(str)) {
 		string parsed = parseIfStatement(str);
-		vector<string> statementCode;
-		bool started = false;
-		int openings = 0;
+		vector<string> statementCode = parseCodeInsideBrackets(code, curIndex);
 
-		for (int i = *curIndex; i < (int)code.size(); i++) {
-			if (count(code[i], '}') > 0) {
-				if (openings > 0) {
-					statementCode.push_back(code[i]);
-					openings--;
-					continue;
-				}
-
-				started = false;
-				*curIndex = i + 1;
-				break;
-			}
-
-			if (started) {
-				statementCode.push_back(code[i]);
-			}
-
-			if (count(code[i], '{') > 0) {
-				if (started) {
-					openings++;
-				}
-				else {
-					started = true;
-				}
-			}
-		}
+#if PRINT_LOGS
+		logInfo("Executing if statement, statement: " + trim(parsed));
+#endif // PRINT_LOGS
 
 		if (evaluateBoolExpression(parsed, *this)) {
-			scopeHeight++;
-			start(statementCode);
-			scopeHeight--;
+			start(statementCode, getLineNo());
 		}
 	}
 	else if (isFunctionDefinition(str)) {
-		if (scopeHeight > 0) {
-			cout << "You cannot define functions inside of if statements or funtions" << endl;
-			exit(0);
+		if (scopeHeight != 0) {
+			logScriptError("You cannot define functions inside of if statements or funtions", getLineNo());
 		}
 
-		vector<string> functionCode;
-		bool started = false;
-		int openings = 0;
+		vector<string> functionCode = parseCodeInsideBrackets(code, curIndex);
 
-		for (int i = *curIndex; i < (int)code.size(); i++) {
-			if (count(code[i], '}') > 0) {
-				if (openings > 0) {
-					functionCode.push_back(code[i]);
-					openings--;
-					continue;
-				}
-
-				started = false;
-				*curIndex = i + 1;
-				break;
-			}
-
-			if (started) {
-				functionCode.push_back(code[i]);
-			}
-
-			if (count(code[i], '{') > 0) {
-				if (started == true) {
-					openings++;
-				}
-				else {
-					started = true;
-				}
-			}
-		}
-
+		string functionName = parseFunctionDefinition(str);
 		string s = trim(replace(split(str, '(')[1], ")", ""));
-		vector<string> parameters = split(s, ',');
-		
-		if (parameters[0] == s) parameters.clear();
+		vector<string> parameters = splitOutsideDoubleQuotes(s, ',');
 
 		for (int i = 0; i < (int)parameters.size(); i++) {
 			parameters[i] = trim(parameters[i]);
 		}
 
-		functions[split(replace(str, "function ", ""), '(')[0]] = make_pair(parameters, functionCode);
+#if PRINT_LOGS
+		logInfo("Declaring function: " + trim(functionName));
+#endif // PRINT_LOGS
 
-		if (started) {
-			cout << "Syntax error: Missing closing bracket" << endl;
-			exit(0);
-		}
+		functions[functionName] = make_pair(parameters, functionCode);
+		functionLineNo[functionName] = getLineNo();
 	}
 	else if (isVariableDeclaration(str)) {
-		string variableName = trim(replace(split(str, '=')[0], "set ", ""));
+		string variableName = parseVariableDeclaration(str);
 		boost::any data = getAnyFromParameter(trim(split(str, '=')[1]), *this);
+
+		if (startsWith(trim(str), "var ") && (globalVariables.find(variableName) != globalVariables.end() || searchLocalVariables(variableName) != -1)) {
+			logScriptError("Variable " + variableName + " is already defined", getLineNo());
+		}
+
+#if PRINT_LOGS
+		logInfo("Setting variable: " + trim(variableName));
+#endif // PRINT_LOGS
 
 		setVariable(variableName, data);
 	}
@@ -246,17 +275,14 @@ boost::any Interpreter::executeLine(const string& str, vector<string> code, int*
 		string functionName = parseFunctionCall(str);
 		vector<boost::any> params = getParameters(str, *this);
 
+#if PRINT_LOGS
+		logInfo("Executing function: " + trim(functionName));
+#endif // PRINT_LOGS
+
 		runFunction(functionName, params);
 	}
-	else if (isMathExpression(str)) {
-		boost::any answer = evaluateExpression(trim(split(str, '=')[1]), *this);
-		string varName = trim(split(str, '=')[0]);
-
-		setVariable(varName, answer);
-	}
 	else {
-		cout << "Syntax error [" << *curIndex + 1 << "]: " << currentLine << endl;
-		exit(0);
+		logScriptError("Syntax error", *curIndex);
 	}
 
 	return NULL;

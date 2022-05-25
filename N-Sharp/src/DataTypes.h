@@ -1,8 +1,8 @@
 #pragma once
 
 enum DataType {
-	STRING,
-	INTEGER,
-	FLOAT,
-	BOOLEAN
+	stringType,
+	intType,
+	floatType,
+	boolType
 };

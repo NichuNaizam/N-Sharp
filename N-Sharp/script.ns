@@ -1,2 +1,20 @@
-NS.System.PrintLine("Enter your name: ")
-NS.System.PrintLine("Your name is ", NS.System.ReadLine())
+using NS.Utility
+
+var name = ""
+var color = ""
+
+function askName()
+{
+	return input("Please enter your name: ")
+}
+
+function askColor()
+{
+	return input("Please enter your favorite color: ")
+}
+
+name = askName()
+color = askColor()
+
+NS.System.SetTextColor(color)
+NS.System.PrintLine(name, ", Welcome to N-Sharp!")

@@ -50,5 +50,6 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="script.ns" />
+    <None Include="NS\Utility.ns" />
   </ItemGroup>
 </Project>

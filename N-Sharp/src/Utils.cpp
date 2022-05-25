@@ -6,22 +6,22 @@ DataType getAnyType(boost::any& any)
 {
 	try {
 		boost::any_cast<string>(any);
-		return DataType::STRING;
+		return DataType::stringType;
 	}
 	catch (exception) {
 		try {
 			boost::any_cast<int>(any);
-			return DataType::INTEGER;
+			return DataType::intType;
 		}
 		catch (exception) {
 			try {
 				boost::any_cast<float>(any);
-				return DataType::FLOAT;
+				return DataType::floatType;
 			}
 			catch (exception) {
 				try {
 					boost::any_cast<bool>(any);
-					return DataType::BOOLEAN;
+					return DataType::boolType;
 				}
 				catch (exception) {
 					cout << "Invalid data type encountered!" << endl;
@@ -135,20 +135,18 @@ bool anyAsBool(boost::any& any)
 	}
 }
 
-boost::any getAnyFromParameter(const string& input, Interpreter& interpreter)
+boost::any getAnyFromParameter(const string& param, Interpreter& interpreter)
 {
-	string param = input;
-
-	if (count(param, '"') >= 2) {
-		int start = (int)param.find_first_of('"') + 1;
-		int end = (int)param.find_last_of('"') - 1;
-		return substring(input, start, end);
-	}
-	else if (interpreter.isFunction(param)) {
+	if (interpreter.isFunction(param)) {
 		string functionName = parseFunctionCall(param);
 		vector<boost::any> params = getParameters(param, interpreter);
 
 		return interpreter.runFunction(functionName, params);
+	}
+	else if (count(param, '"') >= 2) {
+		int start = (int)param.find_first_of('"') + 1;
+		int end = (int)param.find_last_of('"') - 1;
+		return substring(param, start, end);
 	}
 	else if (interpreter.isMathExpression(param)) {
 		return evaluateExpression(param, interpreter);
@@ -254,7 +252,88 @@ vector<string> splitArguments(const string& str)
 
 	output.push_back(temp);
 
-	return vector<string>(output);
+	return output;
+}
+
+vector<string> splitOutsideDoubleQuotes(const string& str, const char& splitChar)
+{
+	vector<string> output;
+	string s = trim(str);
+
+	int parenthesis = 0;
+	bool doubleQuotes = false;
+
+	if (count(str, splitChar) == 0) {
+		if (str.empty()) return vector<string>{};
+		else return vector<string>{str};
+	}
+
+	string temp = "";
+	for (int i = 0; i < (int)s.size(); i++) {
+		if (s[i] == '"') {
+			doubleQuotes = !doubleQuotes;
+			temp += s[i];
+			continue;
+		}
+		else if (doubleQuotes) {
+			temp += s[i];
+		}
+
+		if (doubleQuotes) continue;
+
+		if (str[i] != splitChar) {
+			temp += s[i];
+		}
+		else {
+			output.push_back(temp);
+			temp.clear();
+		}
+	}
+
+	output.push_back(temp);
+
+	return output;
+}
+
+vector<string> parseCodeInsideBrackets(vector<string> code, int* curIndex)
+{
+	vector<string> statementCode;
+	bool started = false;
+	int openings = 0;
+
+	for (int i = *curIndex; i < (int)code.size(); i++) {
+		if (count(code[i], '}') > 0) {
+			if (openings > 0) {
+				statementCode.push_back(code[i]);
+				openings--;
+				continue;
+			}
+
+			started = false;
+			*curIndex = i + 1;
+			break;
+		}
+
+		if (started) {
+			statementCode.push_back(code[i]);
+		}
+
+		if (count(code[i], '{') > 0) {
+			if (started) {
+				openings++;
+			}
+			else {
+				started = true;
+			}
+		}
+	}
+
+	if (started) {
+		cout << "Syntax error: Missing closing bracket" << endl;
+		exit(0);
+	}
+
+	return statementCode;
 }
 
 vector<string> readFromFile(const string& path)
@@ -279,7 +358,16 @@ vector<string> readFromFile(const string& path)
 
 string parseUsingTag(const string& str)
 {
-	return trim(replace(replace(str, "using ", ""), ".", "/")) + ".ns";
+	string s = trim(replace(replace(str, "using ", ""), ".", "/")) + ".ns";
+	string path = "";
+
+#ifdef DEBUG
+	path = s;
+#else
+	path = startsWith(s, "NS/") ? getExePath() + "/" + s : s;
+#endif // DEBUG
+
+	return path;
 }
 
 string parseIfStatement(const string& str)
@@ -290,6 +378,28 @@ string parseIfStatement(const string& str)
 string parseFunctionCall(const string& str)
 {
 	return trim(split(str, '(')[0]);
+}
+
+string parseFunctionDefinition(const string& str)
+{
+	return replace(replace(split(str, '(')[0], "function ", ""), " ", "");
+}
+
+string parseWhileStatement(const string& str)
+{
+	return trim(replace(removeParenthesis(str), "while", ""));
+}
+
+string parseVariableDeclaration(const string& str)
+{
+	return trim(replace(split(str, '=')[0], "var ", ""));
+}
+
+string parseReturnStatement(const string& str)
+{
+	int start = (int)str.find_first_of(' ');
+	int end = (int)str.size() - 1;
+	return trim(substring(trim(str), start, end));
 }
 
 string removeParenthesis(const string& str)
@@ -360,6 +470,14 @@ string rtrim(const string& str)
 string trim(const string& str)
 {
 	return ltrim(rtrim(str));
+}
+
+string getExePath()
+{
+	char buffer[MAX_PATH];
+	GetModuleFileNameA(NULL, buffer, MAX_PATH);
+	string::size_type pos = string(buffer).find_last_of("\\/");
+	return string(buffer).substr(0, pos);
 }
 
 bool isNumber(const string& str)

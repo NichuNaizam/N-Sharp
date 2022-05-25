@@ -36,7 +36,73 @@ int main(int argc, char** argv) {
 
 	// Initializing Interpreter
 	Interpreter interpreter;
-	interpreter.start(code);
+	interpreter.start(code, 0, true);
+
+	// Reset terminal color
+	setColor(WHITE);
 	
 	return 0;
+}
+
+int scriptColor = WHITE;
+void setColor(int color, bool fromScript) {
+	if (fromScript) scriptColor = color;
+
+	HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
+	SetConsoleTextAttribute(hConsole, color == -1 ? scriptColor : color);
+}
+
+void logInfo(const string& info) {
+	setColor(WHITE);
+	cout << "[";
+	setColor(GREEN);
+	cout << "INFO";
+	setColor(WHITE);
+	cout << "]: ";
+	setColor(GREEN);
+	cout << info << endl;
+	setColor(-1);
+}
+
+void logWarning(const string& warning) {
+	setColor(WHITE);
+	cout << "[";
+	setColor(YELLOW);
+	cout << "WARNING";
+	setColor(WHITE);
+	cout << "]: ";
+	setColor(YELLOW);
+	cout << warning << endl;
+	setColor(-1);
+}
+
+void logError(const string& error) {
+	setColor(WHITE);
+	cout << "[";
+	setColor(RED);
+	cout << "ERROR";
+	setColor(WHITE);
+	cout << "]: ";
+	setColor(RED);
+	cout << error << endl;
+	setColor(WHITE);
+	exit(-1);
+}
+
+void logScriptError(const string& error, int lineNo)
+{
+	setColor(WHITE);
+	cout << "[";
+	setColor(RED);
+	cout << "ERROR";
+	setColor(WHITE);
+	cout << "][";
+	setColor(GREEN);
+	cout << lineNo;
+	setColor(WHITE);
+	cout << "]: ";
+	setColor(RED);
+	cout << error << endl;
+	setColor(WHITE);
+	exit(-1);
 }

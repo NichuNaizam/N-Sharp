@@ -17,14 +17,19 @@ public:
 	bool isIfStatement(const string& str);
 	bool isReturnStatement(const string& str);
 	bool isGlobalStatement(const string& str);
+	bool isWhileStatement(const string& str);
 
-	void start(vector<string>& code);
+	int searchLocalVariables(const string& name);
+	int getLineNo();
+
+	boost::any start(vector<string>& code, int statementIndex = 0, bool isMain = false);
 	boost::any executeLine(const string& line, vector<string> code, int* curIndex);
 
 private:
 	map<string, boost::any> globalVariables;
-	map<string, boost::any> localVariables;
+	map<int, map<string, boost::any>> localVariables;
 	map<string, pair<vector<string>, vector<string>>> functions;
-	string currentLine;
+	map<string, int> functionLineNo;
+	int currentIndex = 0;
 	int scopeHeight = 0;
 };
