@@ -11,7 +11,7 @@ N-Sharp, a fully custom interpreted and dynamically typed scripting language wit
 var variableName = 123
 
 // float
-var variableName = 123.0f
+var variableName = 123.0
 
 // string
 var variableName = "Hello"
@@ -44,7 +44,7 @@ function add(num1, num2)
 
 # Functions
 
-## Console
+## System
 
 `NS.System.PrintLine(arguments...)` <br>
 `Returns NULL` <br>
@@ -58,6 +58,9 @@ Reads a full line from stdin <br>
 `NS.System.SetTextColor(colorName)` <br>
 `Returns NULL` <br>
 Sets the text color to the colorName <br>
+`NS.System.GetTime()` <br>
+`Returns float` <br>
+Returns the uptime of the script in milliseconds <br>
 
 ## Graphics
 
@@ -101,33 +104,60 @@ NS.System.PrintLine(name, ", Welcome to N-Sharp.")
 ## Sample Window Program
 
 ```
+// Declaring variables
 var windowWidth = 800
 var windowHeight = 600
-var windowTitle = "Example Window"
+var windowTitle = "Test"
+var fps = 0
+var time = 0.0
+var lastTick = NS.System.GetTime()
 
-function update()
+// Update function
+function update(deltaTime)
 {
+	time = time + deltaTime
 
+	if (time >= 1)
+	{
+		NS.System.PrintLine("FPS: ", fps)
+		fps = 0
+		time = 0
+	}
+
+	fps = fps + 1
 }
 
+// Render function
 function render()
 {
-
 }
 
+// Main function
 function main()
 {
-    NS.Graphics.Init(windowWidth, windowHeight, windowTitle)
+	// Initializing the OpenGL Context and creating a window
+	NS.Graphics.Init(windowWidth, windowHeight, windowTitle)
 
-    while (NS.Graphics.WindowShouldClose() == false)
-    {
-        update()
+	// Game Loop until window closes
+	while (!NS.Graphics.WindowShouldClose())
+	{
+		// Delta Time calculation
+		var now = NS.System.GetTime()
+		var deltaTime = now - lastTick
+		lastTick = now
 
-        NS.Graphics.Begin()
-        render()
-        NS.Graphics.End()
-    }
+		// Calling the update function
+		update(deltaTime)
+
+		// Preparing the graphics engine for rendering
+		NS.Graphics.Begin()
+		// Calling the render function
+		render()
+		// Telling the graphics engine that we have done our drawing
+		NS.Graphics.End()
+	}
 }
 
+// Calling the main function
 main()
 ```
