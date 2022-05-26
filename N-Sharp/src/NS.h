@@ -1,7 +1,7 @@
 #pragma once
 
 #ifdef DEBUG
-#define PRINT_LOGS true
+#define PRINT_LOGS false
 #else
 #define PRINT_LOGS false
 #endif // DEBUG
@@ -36,6 +36,10 @@
 #include <Windows.h>
 
 #include <boost/any.hpp>
+#include <glad/glad.h>
+#include <GLFW/glfw3.h>
+#include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
 
 using namespace std;
 

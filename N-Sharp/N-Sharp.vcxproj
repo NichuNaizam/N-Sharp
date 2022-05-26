@@ -111,6 +111,7 @@
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalLibraryDirectories>$(ProjectDir)lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>glfw3.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
@@ -142,10 +143,12 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="lib\glad.c" />
     <ClCompile Include="src\Eval.cpp" />
     <ClCompile Include="src\Interpreter.cpp" />
     <ClCompile Include="src\Main.cpp" />
     <ClCompile Include="src\Utils.cpp" />
+    <ClCompile Include="src\OpenGL\Window.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\Internal.h" />
@@ -153,11 +156,16 @@
     <ClInclude Include="src\Eval.h" />
     <ClInclude Include="src\Interpreter.h" />
     <ClInclude Include="src\NS.h" />
+    <ClInclude Include="src\OpenGL\OpenGL.h" />
     <ClInclude Include="src\Utils.h" />
+    <ClInclude Include="src\OpenGL\Window.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="NS\Utility.ns" />
     <None Include="script.ns" />
+  </ItemGroup>
+  <ItemGroup>
+    <Library Include="lib\glfw3.lib" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

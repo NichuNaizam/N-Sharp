@@ -137,19 +137,35 @@ bool anyAsBool(boost::any& any)
 
 boost::any getAnyFromParameter(const string& param, Interpreter& interpreter)
 {
-	if (interpreter.isFunction(param)) {
-		string functionName = parseFunctionCall(param);
-		vector<boost::any> params = getParameters(param, interpreter);
-
-		return interpreter.runFunction(functionName, params);
-	}
-	else if (count(param, '"') >= 2) {
+	if (count(param, '"') >= 2) {
 		int start = (int)param.find_first_of('"') + 1;
 		int end = (int)param.find_last_of('"') - 1;
 		return substring(param, start, end);
 	}
 	else if (interpreter.isMathExpression(param)) {
-		return evaluateExpression(param, interpreter);
+		string expression = replace(param, " ", "");
+		bool isInt = false;
+		vector<char> ops = { '+', '-', '*', '/', '^' };
+		vector<string> splitted = splitMultipleChars(param, ops);
+
+		for (const string& s : splitted) {
+			if (isNumber(trim(s)) || isFloat(trim(s))) continue;
+
+			boost::any var = getAnyFromParameter(trim(s), interpreter);
+			string value = anyAsString(var);
+
+			expression = replace(expression, trim(s), value);
+		}
+
+		float value = evaluateExpression(expression);
+
+		return isInt ? boost::any((int)value) : boost::any((float)value);
+	}
+	else if (interpreter.isFunction(param)) {
+		string functionName = parseFunctionCall(param);
+		vector<boost::any> params = getParameters(param, interpreter);
+
+		return interpreter.runFunction(functionName, params);
 	}
 	else if (param == "true" || param == "false") {
 		bool state = false;
@@ -158,12 +174,12 @@ boost::any getAnyFromParameter(const string& param, Interpreter& interpreter)
 
 		return state;
 	}
-	else if (param.substr(param.size() - 1) == "f") {
-		float f = stof(replace(param, "f", ""));
-		return f;
-	}
 	else if (isNumber(param)) {
 		return stoi(param);
+	}
+	else if (isFloat(trim(param))) {
+		float f = stof(trim(param));
+		return f;
 	}
 	else {
 		return interpreter.getVariable(trim(param));
@@ -176,7 +192,7 @@ vector<boost::any> getParameters(const string& str, Interpreter& interpreter) {
 	
 	vector<string> arguments = splitArguments(s);
 	for (const string& arg : arguments) {
-		output.push_back(getAnyFromParameter(arg, interpreter));
+		output.push_back(getAnyFromParameter(trim(arg), interpreter));
 	}
 
 	return output;
@@ -253,6 +269,41 @@ vector<string> splitArguments(const string& str)
 	output.push_back(temp);
 
 	return output;
+}
+
+vector<string> splitMultipleChars(const string& str, vector<char> chars)
+{
+	bool hasChars = false;
+	for (int i = 0; i < (int)chars.size(); i++) {
+		if (count(str, chars[i]) != 0) {
+			hasChars = true;
+		}
+	}
+
+	if (!hasChars) return vector<string> {str};
+
+	string temp = "";
+	vector<string> words;
+
+	for (int i = 0; i < (int)str.size(); i++) {
+		bool found = false;
+
+		for (int j = 0; j < (int)chars.size(); j++) {
+			if (str[i] == chars[j]) {
+				words.push_back(temp);
+				temp = "";
+				found = true;
+				break;
+			}
+		}
+
+		if (!found) {
+			temp += str[i];
+		}
+	}
+	words.push_back(temp);
+
+	return words;
 }
 
 vector<string> splitOutsideDoubleQuotes(const string& str, const char& splitChar)
@@ -488,6 +539,16 @@ bool isNumber(const string& str)
 	}
 
 	return isDigit;
+}
+
+bool isFloat(const string& str)
+{
+	bool isFloat = true;
+	for (int i = 0; i < (int)str.size(); i++) {
+		if (!isdigit(str[i]) && str[i] != '.') isFloat = false;
+	}
+
+	return isFloat;
 }
 
 bool startsWith(const string& str, const string& start)

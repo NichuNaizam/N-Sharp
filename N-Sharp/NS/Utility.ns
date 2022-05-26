@@ -3,3 +3,8 @@ function input(question)
 	NS.System.PrintLine(question)
 	return NS.System.ReadLine()
 }
+
+function add(num1, num2)
+{
+	return num1 + num2
+}

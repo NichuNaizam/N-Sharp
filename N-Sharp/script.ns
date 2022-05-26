@@ -1,20 +1,44 @@
-using NS.Utility
+var windowWidth = 800
+var windowHeight = 600
+var windowTitle = "Test"
+var fps = 0
+var time = 0.0
+var lastTick = NS.System.GetTime()
 
-var name = ""
-var color = ""
-
-function askName()
+function update(deltaTime)
 {
-	return input("Please enter your name: ")
+	time = time + deltaTime
+
+	if (time >= 1)
+	{
+		NS.System.PrintLine("FPS: ", fps)
+		fps = 0
+		time = 0
+	}
+
+	fps = fps + 1
 }
 
-function askColor()
+function render()
 {
-	return input("Please enter your favorite color: ")
 }
 
-name = askName()
-color = askColor()
+function main()
+{
+	NS.Graphics.Init(windowWidth, windowHeight, windowTitle)
 
-NS.System.SetTextColor(color)
-NS.System.PrintLine(name, ", Welcome to N-Sharp!")
+	while (!NS.Graphics.WindowShouldClose())
+	{
+		var now = NS.System.GetTime()
+		var deltaTime = now - lastTick
+		lastTick = now
+
+		update(deltaTime)
+		
+		NS.Graphics.Begin()
+		render()
+		NS.Graphics.End()
+	}
+}
+
+main()

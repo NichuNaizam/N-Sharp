@@ -37,34 +37,9 @@ float applyOp(const float& a, const float& b, const char& c)
 	return 0;
 }
 
-float evaluateExpression(const string& exp, Interpreter& interpreter)
+float evaluateExpression(const string& exp)
 {
 	string tokens = replace(exp, " ", "");
-
-	string temp = "";
-	int offset = 0;
-	for (int i = 0; i < (int)tokens.size(); i++) {
-		if (tokens[i] != '+' && tokens[i] != '-' && tokens[i] != '*' && tokens[i] != '/' && tokens[i] != '^' && tokens[i] != '(' && tokens[i] != ')') {
-			if (temp.empty() && !isdigit(tokens[i])) temp += tokens[i];
-			else if (!temp.empty()) temp += tokens[i];
-		}
-		else {
-			if (!temp.empty()) {
-				boost::any varValue = interpreter.getVariable(temp);
-				string value = anyAsString(varValue);
-				tokens = replace(tokens, temp, value);
-				i -= (int)temp.size();
-				temp = "";
-			}
-		}
-	}
-
-	if (!temp.empty()) {
-		boost::any varValue = interpreter.getVariable(temp);
-		string value = anyAsString(varValue);
-		tokens = replace(tokens, temp, value);
-		temp = "";
-	}
 
 	stack<float> values;
 	stack<char> ops;
@@ -163,9 +138,44 @@ float evaluateExpression(const string& exp, Interpreter& interpreter)
 	return values.top();
 }
 
+bool containsInt(const string& expression, Interpreter& interpreter)
+{
+	bool isInt = false;
+	string tokens = replace(expression, " ", "");
+	logInfo(tokens);
+
+	string temp = "";
+	for (int i = 0; i < (int)tokens.size(); i++) {
+		if (tokens[i] != '+' && tokens[i] != '-' && tokens[i] != '*' && tokens[i] != '/' && tokens[i] != '^' && tokens[i] != '(' && tokens[i] != ')') {
+			if (temp.empty() && !isdigit(tokens[i])) temp += tokens[i];
+			else if (!temp.empty()) temp += tokens[i];
+		}
+		else {
+			if (!temp.empty()) {
+				boost::any varValue = interpreter.getVariable(temp);
+				isInt = getAnyType(varValue) == DataType::intType;
+				i -= (int)temp.size();
+				temp = "";
+			}
+		}
+	}
+
+	if (!temp.empty()) {
+		boost::any varValue = interpreter.getVariable(temp);
+		string value = anyAsString(varValue);
+		isInt = getAnyType(varValue) == DataType::intType;
+		temp.clear();
+	}
+
+	return isInt;
+}
+
 bool evaluateBoolExpression(const string& expression, Interpreter& interpreter)
 {
 	string tokens = replace(expression, " ", "");
+	bool negative = startsWith(tokens, "!");
+	if (negative) tokens = replace(tokens, "!", "");
+
 	string filledTokens = "";
 
 	string temp = "";
@@ -197,29 +207,45 @@ bool evaluateBoolExpression(const string& expression, Interpreter& interpreter)
 	}
 
 	tokens = filledTokens;
+	bool value = false;
 
-	if (contains(tokens, "==")) {
+	if (contains(tokens, "<=")) {
+		vector<string> data = splitMultipleChars(tokens, { '<', '=' });
+		if (stof(data[0]) <= stof(data[2])) value = true;
+		else value = false;
+	}
+	else if (contains(tokens, ">=")) {
+		vector<string> data = splitMultipleChars(tokens, { '>', '=' });
+		if (stof(data[0]) >= stof(data[2])) value = true;
+		else value = false;
+	}
+	else if (contains(tokens, "!=")) {
+		vector<string> data = splitMultipleChars(tokens, { '!', '=' });
+		if (data[0] != data[2]) value = true;
+		else value = false;
+	}
+	else if (contains(tokens, "==")) {
 		vector<string> data = split(tokens, '=');
-		if (data[0] == data[2]) return true;
-		else return false;
+		if (data[0] == data[2]) value = true;
+		else value = false;
 	}
 	else if (contains(tokens, ">")) {
 		vector<string> data = split(tokens, '>');
-		if (stof(data[0]) > stof(data[1])) return true;
-		else return false;
+		if (stof(data[0]) > stof(data[1])) value = true;
+		else value = false;
 	}
 	else if (contains(tokens, "<")) {
 		vector<string> data = split(tokens, '<');
-		if (stof(data[0]) < stof(data[1])) return true;
-		else return false;
+		if (stof(data[0]) < stof(data[1])) value = true;
+		else value = false;
+	}
+	else if (tokens == "1" || tokens == "0") {
+		if (tokens == "1") value = true;
+		else if (tokens == "0") value = false;
 	}
 	else {
-		if (tokens == "1") return true;
-		else if (tokens == "0") return false;
-
-		cout << "Invalid operator errror: " << expression << endl;
-		exit(0);
+		logScriptError("Invalid statement error: " + expression, interpreter.getLineNo());
 	}
 
-	return false;
+	return negative ? !value : value;
 }

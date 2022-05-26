@@ -42,7 +42,7 @@ boost::any Interpreter::runFunction(const string& str, vector<boost::any> argume
 			return returnValue;
 		}
 		else {
-			logScriptError("Undefined function error: ", getLineNo());
+			logScriptError("Undefined function error: " + str, getLineNo());
 		}
 	}
 
@@ -60,7 +60,7 @@ boost::any Interpreter::getVariable(const string& name)
 		logScriptError("Variable not defined error: " + name, getLineNo());
 	}
 
-	return globalVariables.at(name);
+	return globalVariables[name];
 }
 
 void Interpreter::setVariable(const string& name, boost::any any, bool forceGlobal)
@@ -105,7 +105,7 @@ bool Interpreter::isVariableDeclaration(const string& str)
 
 bool Interpreter::isMathExpression(const string& str)
 {
-	return count(str, '\"') == 0 && count(str, '=') == 0 && (count(str, '+') != 0 || count(str, '-') != 0 || count(str, '*') != 0 || count(str, '/') != 0 || count(str, '^') != 0);
+	return count(str, '\"') == 0 && (count(str, '+') != 0 || count(str, '-') != 0 || count(str, '*') != 0 || count(str, '/') != 0 || count(str, '^') != 0);
 }
 
 bool Interpreter::isUsingTag(const string& str)
@@ -171,7 +171,6 @@ boost::any Interpreter::executeLine(const string& str, vector<string> code, int*
 #if PRINT_LOGS
 	logInfo("Executing line: " + trim(str));
 #endif // PRINT_LOGS
-
 
 	if (isUsingTag(str)) {
 		string path = parseUsingTag(str);

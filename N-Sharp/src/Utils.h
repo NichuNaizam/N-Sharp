@@ -14,6 +14,7 @@ boost::any getAnyFromParameter(const string& param, Interpreter& interpreter);
 vector<boost::any> getParameters(const string& str, Interpreter& interpreter);
 vector<string> split(const string& str, const char& c);
 vector<string> splitArguments(const string& str);
+vector<string> splitMultipleChars(const string& str, vector<char> chars);
 vector<string> splitOutsideDoubleQuotes(const string& str, const char& splitChar);
 vector<string> parseCodeInsideBrackets(vector<string> code, int* curIndex);
 vector<string> readFromFile(const string& path);
@@ -34,6 +35,7 @@ string trim(const string& str);
 string getExePath();
 
 bool isNumber(const string& str);
+bool isFloat(const string& str);
 bool startsWith(const string& str, const string& start);
 bool endsWith(const string& str, const string& end);
 bool contains(const string& str, const string& content);
