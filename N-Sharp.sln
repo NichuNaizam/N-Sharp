@@ -5,6 +5,8 @@ VisualStudioVersion = 16.0.32413.511
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "N-Sharp", "N-Sharp\N-Sharp.vcxproj", "{28280380-FCE0-4593-8885-2D4579CF4834}"
 EndProject
+Project("{54435603-DBB4-11D2-8724-00A0C9A8B90C}") = "N-Sharp Installer", "N-Sharp Installer\N-Sharp Installer.vdproj", "{D96EC1D1-C1A1-470D-B8CB-8B13C47D14AC}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
@@ -21,6 +23,10 @@ Global
 		{28280380-FCE0-4593-8885-2D4579CF4834}.Release|x64.Build.0 = Release|x64
 		{28280380-FCE0-4593-8885-2D4579CF4834}.Release|x86.ActiveCfg = Release|Win32
 		{28280380-FCE0-4593-8885-2D4579CF4834}.Release|x86.Build.0 = Release|Win32
+		{D96EC1D1-C1A1-470D-B8CB-8B13C47D14AC}.Debug|x64.ActiveCfg = Debug
+		{D96EC1D1-C1A1-470D-B8CB-8B13C47D14AC}.Debug|x86.ActiveCfg = Debug
+		{D96EC1D1-C1A1-470D-B8CB-8B13C47D14AC}.Release|x64.ActiveCfg = Release
+		{D96EC1D1-C1A1-470D-B8CB-8B13C47D14AC}.Release|x86.ActiveCfg = Release
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
