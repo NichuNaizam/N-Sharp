@@ -4,10 +4,13 @@
 class Interpreter
 {
 public:
-	boost::any runFunction(const string& str, vector<boost::any> arguments);
+	map<string, NSharpFunction> functions;
+	map<string, NSharpVariable> globalVariables;
+
+	pair<string, boost::any> runFunction(const string& str, vector<NSharpVariable> arguments);
 	
-	boost::any getVariable(const string& name);
-	void setVariable(const string& name, boost::any any, bool forceGlobal = false);
+	pair<string, boost::any> getVariable(const string& name);
+	void setVariable(const string& name, NSharpVariable data, bool forceGlobal = false);
 
 	bool isFunction(const string& str);
 	bool isVariableDeclaration(const string& str);
@@ -16,20 +19,18 @@ public:
 	bool isFunctionDefinition(const string& str);
 	bool isIfStatement(const string& str);
 	bool isReturnStatement(const string& str);
-	bool isGlobalStatement(const string& str);
 	bool isWhileStatement(const string& str);
 
 	int searchLocalVariables(const string& name);
-	int getLineNo();
+	string getLine();
 
-	boost::any start(vector<string>& code, int statementIndex = 0, bool isMain = false);
-	boost::any executeLine(const string& line, vector<string> code, int* curIndex);
+	NSharpVariable start(vector<string>& code, bool isMain = false);
+	NSharpVariable executeLine(const string& line, vector<string> code, int* curIndex);
 
 private:
-	map<string, boost::any> globalVariables;
-	map<int, map<string, boost::any>> localVariables;
-	map<string, pair<vector<string>, vector<string>>> functions;
-	map<string, int> functionLineNo;
-	int currentIndex = 0;
+	map<int, map<string, NSharpVariable>> localVariables;
+	otherFilesType otherFiles;
+	string currentLine;
+	string otherClassName = "";
 	int scopeHeight = 0;
 };

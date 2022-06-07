@@ -1,5 +1,0 @@
-function input(question)
-{
-	NS.System.PrintLine(question)
-	return NS.System.ReadLine()
-}

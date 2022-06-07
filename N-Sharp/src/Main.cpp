@@ -1,12 +1,23 @@
+#define STB_IMAGE_IMPLEMENTATION
+
 #include "NS.h"
 #include "Interpreter.h"
 
 int main(int argc, char** argv) {
-
 	// Arguments checks
 	if (argc == 1) {
-		cout << "You need to provide a script file \"ns script.ns\"" << endl;
-		return -1;
+		Interpreter interpreter;
+		vector<string> code;
+		int curIndex = 0;
+		cout << "---------------------------[N-Sharp - " << VERSION << "]-------------------------------" << endl;
+		while (true) {
+			cout << ">> ";
+			string input;
+			getline(cin, input);
+			code.push_back(input);
+			interpreter.executeLine(input, code, &curIndex);
+			curIndex++;
+		}
 	}
 
 	string scriptFile = argv[1];
@@ -36,12 +47,17 @@ int main(int argc, char** argv) {
 
 	// Initializing Interpreter
 	Interpreter interpreter;
-	interpreter.start(code, 0, true);
+	interpreter.start(code, true);
 
 	// Reset terminal color
 	setColor(WHITE);
 	
 	return 0;
+}
+
+NSharpVariable createVariable(string type, boost::any value)
+{
+	return make_pair(type, value);
 }
 
 int scriptColor = WHITE;
@@ -89,20 +105,12 @@ void logError(const string& error) {
 	exit(-1);
 }
 
-void logScriptError(const string& error, int lineNo)
+void logScriptError(const string& error, string line)
 {
-	setColor(WHITE);
-	cout << "[";
 	setColor(RED);
-	cout << "ERROR";
-	setColor(WHITE);
-	cout << "][";
-	setColor(GREEN);
-	cout << lineNo;
-	setColor(WHITE);
-	cout << "]: ";
-	setColor(RED);
-	cout << error << endl;
+	cout << "\n\n-------------------------------------ERROR-------------------------------------" << endl;
+	cout << "Line: " << line << endl;
+	cout << "Error: " << error << endl;
 	setColor(WHITE);
 	exit(-1);
 }

@@ -1,10 +1,7 @@
-﻿  Eval.cpp
-  Interpreter.cpp
-  Main.cpp
-  Utils.cpp
+﻿  Main.cpp
   Generating code
-  5 of 1134 functions ( 0.4%) were compiled, the rest were copied from previous compilation.
+  1 of 1585 functions (<0.1%) were compiled, the rest were copied from previous compilation.
     0 functions were new in current compilation
-    117 functions had inline decision re-evaluated but remain unchanged
+    12 functions had inline decision re-evaluated but remain unchanged
   Finished generating code
   N-Sharp.vcxproj -> D:\Projects\C++\N-Sharp\Release\N-Sharp.exe

@@ -1,10 +1,12 @@
 #pragma once
 
 #ifdef DEBUG
-#define PRINT_LOGS false
+#define PRINT_LOGS true
 #else
 #define PRINT_LOGS false
 #endif // DEBUG
+
+#define VERSION "0.1.4-BETA"
 
 #define BLACK			0
 #define BLUE			1
@@ -40,11 +42,19 @@
 #include <GLFW/glfw3.h>
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
+#include <stb_image.h>
+
+#define otherFilesType map<string, pair<map<string, pair<vector<string>, vector<string>>>, map<string, pair<string, boost::any>>>>
+#define NSharpNULL make_pair<string, boost::any>("NULL", NULL);
+#define NSharpVariable pair<string, boost::any>
+#define NSharpFunction pair<vector<string>, vector<string>>
 
 using namespace std;
+
+NSharpVariable createVariable(string type, boost::any value);
 
 void setColor(int color, bool fromScript = false);
 void logInfo(const string& message);
 void logWarning(const string& warning);
 void logError(const string& error);
-void logScriptError(const string& error, int lineNo);
+void logScriptError(const string& error, string line);

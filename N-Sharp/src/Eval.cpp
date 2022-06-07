@@ -152,8 +152,8 @@ bool containsInt(const string& expression, Interpreter& interpreter)
 		}
 		else {
 			if (!temp.empty()) {
-				boost::any varValue = interpreter.getVariable(temp);
-				isInt = getAnyType(varValue) == DataType::intType;
+				NSharpVariable varValue = interpreter.getVariable(temp);
+				isInt = varValue.first == "int";
 				i -= (int)temp.size();
 				temp = "";
 			}
@@ -161,9 +161,9 @@ bool containsInt(const string& expression, Interpreter& interpreter)
 	}
 
 	if (!temp.empty()) {
-		boost::any varValue = interpreter.getVariable(temp);
-		string value = anyAsString(varValue);
-		isInt = getAnyType(varValue) == DataType::intType;
+		NSharpVariable varValue = interpreter.getVariable(temp);
+		string value = anyAsString(varValue.second);
+		isInt = varValue.first == "int";
 		temp.clear();
 	}
 
@@ -180,7 +180,7 @@ bool evaluateBoolExpression(const string& expression, Interpreter& interpreter)
 
 	string temp = "";
 	for (int i = 0; i < (int)tokens.size(); i++) {
-		if (tokens[i] != '<' && tokens[i] != '>' && tokens[i] != '=') {
+		if (tokens[i] != '<' && tokens[i] != '>' && tokens[i] != '=' && tokens[i] != '!') {
 			temp += tokens[i];
 		}
 		else {
@@ -190,8 +190,8 @@ bool evaluateBoolExpression(const string& expression, Interpreter& interpreter)
 			}
 
 			if (!temp.empty()) {
-				boost::any varData = getAnyFromParameter(temp, interpreter);
-				string data = anyAsString(varData);
+				NSharpVariable varData = getAnyFromParameter(temp, interpreter);
+				string data = anyAsString(varData.second);
 				filledTokens += data;
 				temp.clear();
 			}
@@ -201,8 +201,8 @@ bool evaluateBoolExpression(const string& expression, Interpreter& interpreter)
 	}
 
 	if (!temp.empty()) {
-		boost::any varData = getAnyFromParameter(temp, interpreter);
-		string data = anyAsString(varData);
+		NSharpVariable varData = getAnyFromParameter(temp, interpreter);
+		string data = anyAsString(varData.second);
 		filledTokens += data;
 	}
 
@@ -239,12 +239,12 @@ bool evaluateBoolExpression(const string& expression, Interpreter& interpreter)
 		if (stof(data[0]) < stof(data[1])) value = true;
 		else value = false;
 	}
-	else if (tokens == "1" || tokens == "0") {
-		if (tokens == "1") value = true;
-		else if (tokens == "0") value = false;
+	else if (tokens == "true" || tokens == "false") {
+		if (tokens == "true") value = true;
+		else if (tokens == "false") value = false;
 	}
 	else {
-		logScriptError("Invalid statement error: " + expression, interpreter.getLineNo());
+		logScriptError("Invalid statement error: " + expression, interpreter.getLine());
 	}
 
 	return negative ? !value : value;

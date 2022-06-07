@@ -143,16 +143,21 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="src\OpenGL\Input.cpp" />
     <ClCompile Include="lib\glad.c" />
+    <ClCompile Include="src\OpenGL\Shader.cpp" />
     <ClCompile Include="src\Eval.cpp" />
     <ClCompile Include="src\Interpreter.cpp" />
     <ClCompile Include="src\Main.cpp" />
+    <ClCompile Include="src\OpenGL\OpenGL.cpp" />
     <ClCompile Include="src\Utils.cpp" />
     <ClCompile Include="src\OpenGL\Window.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="src\OpenGL\Input.h" />
+    <ClInclude Include="lib\stb_image.h" />
+    <ClInclude Include="src\OpenGL\Shader.h" />
     <ClInclude Include="src\Internal.h" />
-    <ClInclude Include="src\DataTypes.h" />
     <ClInclude Include="src\Eval.h" />
     <ClInclude Include="src\Interpreter.h" />
     <ClInclude Include="src\NS.h" />
@@ -161,11 +166,21 @@
     <ClInclude Include="src\OpenGL\Window.h" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="NS\Utility.ns" />
+    <None Include="internal_libraries\NS\Graphics.ns" />
+    <None Include="internal_libraries\NS\Input.ns" />
+    <None Include="internal_libraries\NS\Physics.ns" />
+    <None Include="internal_libraries\NS\Vec2.ns" />
     <None Include="script.ns" />
+    <None Include="test\Game\Ball.ns" />
+    <None Include="test\Main.ns" />
   </ItemGroup>
   <ItemGroup>
     <Library Include="lib\glfw3.lib" />
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="res\N#.png" />
+    <Image Include="test\res\N#.png" />
+    <Image Include="test\res\square.png" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

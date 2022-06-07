@@ -1,23 +1,37 @@
+#pragma once
+
 #include "NS.h"
 #include "Interpreter.h"
-#include "DataTypes.h"
 
-DataType getAnyType(boost::any& any);
+struct VariableType {
+	VariableType(string type, string name, string value) {
+		this->type = type;
+		this->name = name;
+		this->value = value;
+	}
+
+	string type;
+	string name;
+	string value;
+};
 
 string anyAsString(boost::any& any);
 int anyAsInt(boost::any& any);
 float anyAsFloat(boost::any& any);
 bool anyAsBool(boost::any& any);
+glm::vec2 anyAsVector2(boost::any& any);
 
-boost::any getAnyFromParameter(const string& param, Interpreter& interpreter);
+NSharpVariable getAnyFromParameter(const string& param, Interpreter& interpreter);
 
-vector<boost::any> getParameters(const string& str, Interpreter& interpreter);
+vector<NSharpVariable> getParameters(const string& str, Interpreter& interpreter);
 vector<string> split(const string& str, const char& c);
 vector<string> splitArguments(const string& str);
 vector<string> splitMultipleChars(const string& str, vector<char> chars);
 vector<string> splitOutsideDoubleQuotes(const string& str, const char& splitChar);
-vector<string> parseCodeInsideBrackets(vector<string> code, int* curIndex);
+vector<string> parseCodeInsideBrackets(vector<string> code, string curLine, int* curIndex);
 vector<string> readFromFile(const string& path);
+
+VariableType getVariableType(const string& str);
 
 string parseUsingTag(const string& str);
 string parseIfStatement(const string& str);

@@ -33,6 +33,15 @@
     <ClCompile Include="src\OpenGL\Window.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="src\OpenGL\OpenGL.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\OpenGL\Shader.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\OpenGL\Input.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\NS.h">
@@ -47,9 +56,6 @@
     <ClInclude Include="src\Eval.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\DataTypes.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="src\Internal.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -59,12 +65,37 @@
     <ClInclude Include="src\OpenGL\OpenGL.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="lib\stb_image.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\OpenGL\Shader.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\OpenGL\Input.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="script.ns" />
-    <None Include="NS\Utility.ns" />
+    <None Include="internal_libraries\NS\Vec2.ns" />
+    <None Include="internal_libraries\NS\Graphics.ns" />
+    <None Include="internal_libraries\NS\Input.ns" />
+    <None Include="internal_libraries\NS\Physics.ns" />
+    <None Include="test\Main.ns" />
+    <None Include="test\Game\Ball.ns" />
   </ItemGroup>
   <ItemGroup>
     <Library Include="lib\glfw3.lib" />
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="res\N#.png">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="test\res\N#.png">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="test\res\square.png">
+      <Filter>Resource Files</Filter>
+    </Image>
   </ItemGroup>
 </Project>

@@ -2,36 +2,6 @@
 #include "Interpreter.h"
 #include "Eval.h"
 
-DataType getAnyType(boost::any& any)
-{
-	try {
-		boost::any_cast<string>(any);
-		return DataType::stringType;
-	}
-	catch (exception) {
-		try {
-			boost::any_cast<int>(any);
-			return DataType::intType;
-		}
-		catch (exception) {
-			try {
-				boost::any_cast<float>(any);
-				return DataType::floatType;
-			}
-			catch (exception) {
-				try {
-					boost::any_cast<bool>(any);
-					return DataType::boolType;
-				}
-				catch (exception) {
-					cout << "Invalid data type encountered!" << endl;
-					exit(-1);
-				}
-			}
-		}
-	}
-}
-
 string anyAsString(boost::any& any)
 {
 	try {
@@ -47,15 +17,21 @@ string anyAsString(boost::any& any)
 			}
 			catch (exception) {
 				try {
-					return to_string(boost::any_cast<bool>(any));
+					return boost::any_cast<bool>(any) ? "true" : "false";
 				}
 				catch (exception) {
-					cout << "Invalid data type encountered!" << endl;
-					exit(-1);
+					try {
+						return "(" + to_string(boost::any_cast<glm::vec2>(any).x) + ", " + to_string(boost::any_cast<glm::vec2>(any).y) + ")";
+					}
+					catch (exception) {
+						logError("Invalid data type encountered! (anyAsString)");
+					}
 				}
 			}
 		}
 	}
+
+	return NULL;
 }
 
 int anyAsInt(boost::any& any) {
@@ -75,12 +51,18 @@ int anyAsInt(boost::any& any) {
 					return boost::any_cast<bool>(any);
 				}
 				catch (exception) {
-					cout << "Invalid data type encountered!" << endl;
-					exit(-1);
+					try {
+						return (int)boost::any_cast<glm::vec2>(any).x;
+					}
+					catch (exception) {
+						logError("Invalid data type encountered! (anyAsInt)");
+					}
 				}
 			}
 		}
 	}
+
+	return NULL;
 }
 
 float anyAsFloat(boost::any& any)
@@ -101,12 +83,18 @@ float anyAsFloat(boost::any& any)
 					return boost::any_cast<bool>(any);
 				}
 				catch (exception) {
-					cout << "Invalid data type encountered!" << endl;
-					exit(-1);
+					try {
+						return boost::any_cast<glm::vec2>(any).x;
+					}
+					catch (exception) {
+						logError("Invalid data type encountered! (anyAsFloat)");
+					}
 				}
 			}
 		}
 	}
+
+	return NULL;
 }
 
 bool anyAsBool(boost::any& any)
@@ -127,22 +115,56 @@ bool anyAsBool(boost::any& any)
 					return boost::any_cast<bool>(any);
 				}
 				catch (exception) {
-					cout << "Invalid data type encountered!" << endl;
-					exit(-1);
+					try {
+						return boost::any_cast<glm::vec2>(any).x > 0 || boost::any_cast<glm::vec2>(any).y > 0;
+					}
+					catch (exception) {
+						logError("Invalid data type encountered! (anyAsBool)");
+					}
 				}
 			}
 		}
 	}
+
+	return NULL;
 }
 
-boost::any getAnyFromParameter(const string& param, Interpreter& interpreter)
+glm::vec2 anyAsVector2(boost::any& any)
 {
-	if (count(param, '"') >= 2) {
+	try {
+		return boost::any_cast<glm::vec2>(any);
+	}
+	catch (exception) {
+		return glm::vec2(0, 0);
+	}
+}
+
+NSharpVariable getAnyFromParameter(const string& param, Interpreter& interpreter)
+{
+	if (interpreter.isFunction(param)) {
+#if PRINT_LOGS
+		logInfo("Guessing " + trim(param) + " as function");
+#endif // PRINT_LOGS
+
+		string functionName = parseFunctionCall(param);
+		vector<NSharpVariable> params = getParameters(param, interpreter);
+
+		return interpreter.runFunction(functionName, params);
+	}
+	else if (count(param, '"') >= 2) {
+#if PRINT_LOGS
+		logInfo("Guessing " + trim(param) + " as string");
+#endif // PRINT_LOGS
+
 		int start = (int)param.find_first_of('"') + 1;
 		int end = (int)param.find_last_of('"') - 1;
-		return substring(param, start, end);
+		return createVariable("string", substring(param, start, end));
 	}
 	else if (interpreter.isMathExpression(param)) {
+#if PRINT_LOGS
+		logInfo("Guessing " + trim(param) + " as math expression");
+#endif // PRINT_LOGS
+
 		string expression = replace(param, " ", "");
 		bool isInt = false;
 		vector<char> ops = { '+', '-', '*', '/', '^' };
@@ -151,43 +173,52 @@ boost::any getAnyFromParameter(const string& param, Interpreter& interpreter)
 		for (const string& s : splitted) {
 			if (isNumber(trim(s)) || isFloat(trim(s))) continue;
 
-			boost::any var = getAnyFromParameter(trim(s), interpreter);
-			string value = anyAsString(var);
+			NSharpVariable var = getAnyFromParameter(trim(s), interpreter);
+			string value = anyAsString(var.second);
 
 			expression = replace(expression, trim(s), value);
 		}
 
 		float value = evaluateExpression(expression);
 
-		return isInt ? boost::any((int)value) : boost::any((float)value);
-	}
-	else if (interpreter.isFunction(param)) {
-		string functionName = parseFunctionCall(param);
-		vector<boost::any> params = getParameters(param, interpreter);
-
-		return interpreter.runFunction(functionName, params);
+		return isInt ? createVariable("int", boost::any((int)value)) : createVariable("float", boost::any((float)value));
 	}
 	else if (param == "true" || param == "false") {
+#if PRINT_LOGS
+		logInfo("Guessing " + trim(param) + " as bool");
+#endif // PRINT_LOGS
+
 		bool state = false;
 
 		if (param == "true") state = true;
 
-		return state;
+		return createVariable("bool", state);
 	}
 	else if (isNumber(param)) {
-		return stoi(param);
+#if PRINT_LOGS
+		logInfo("Guessing " + trim(param) + " as int");
+#endif // PRINT_LOGS
+
+		return createVariable("int", stoi(trim(param)));
 	}
 	else if (isFloat(trim(param))) {
-		float f = stof(trim(param));
-		return f;
+#if PRINT_LOGS
+		logInfo("Guessing " + trim(param) + " as float");
+#endif // PRINT_LOGS
+
+		return createVariable("float", stof(trim(param)));
 	}
 	else {
+#if PRINT_LOGS
+		logInfo("Guessing " + trim(param) + " as variable");
+#endif // PRINT_LOGS
+
 		return interpreter.getVariable(trim(param));
 	}
 }
 
-vector<boost::any> getParameters(const string& str, Interpreter& interpreter) {
-	vector<boost::any> output;
+vector<NSharpVariable> getParameters(const string& str, Interpreter& interpreter) {
+	vector<NSharpVariable> output;
 	string s = removeParenthesis(trim(str));
 	
 	vector<string> arguments = splitArguments(s);
@@ -346,7 +377,7 @@ vector<string> splitOutsideDoubleQuotes(const string& str, const char& splitChar
 	return output;
 }
 
-vector<string> parseCodeInsideBrackets(vector<string> code, int* curIndex)
+vector<string> parseCodeInsideBrackets(vector<string> code, string curLine, int* curIndex)
 {
 	vector<string> statementCode;
 	bool started = false;
@@ -380,8 +411,7 @@ vector<string> parseCodeInsideBrackets(vector<string> code, int* curIndex)
 	}
 
 	if (started) {
-		cout << "Syntax error: Missing closing bracket" << endl;
-		exit(0);
+		logScriptError("Syntax error: Missing closing bracket", curLine);
 	}
 
 	return statementCode;
@@ -407,15 +437,25 @@ vector<string> readFromFile(const string& path)
 	return output;
 }
 
+VariableType getVariableType(const string& str)
+{
+	vector<string> splitted = split(trim(str), ' ');
+	string dataType = splitted[0];
+	string varName = splitted[1];
+	string value = trim(split(trim(str), '=')[1]);
+
+	return VariableType(dataType, varName, value);
+}
+
 string parseUsingTag(const string& str)
 {
 	string s = trim(replace(replace(str, "using ", ""), ".", "/")) + ".ns";
 	string path = "";
 
 #ifdef DEBUG
-	path = s;
+	path = startsWith(s, "NS/") ? "./internal_libraries/" + s : "./test/" + s;
 #else
-	path = startsWith(s, "NS/") ? getExePath() + "/" + s : s;
+	path = startsWith(s, "NS/") ? getExePath() + "/internal_libraries/" + s : s;
 #endif // DEBUG
 
 	return path;
@@ -423,7 +463,9 @@ string parseUsingTag(const string& str)
 
 string parseIfStatement(const string& str)
 {
-	return replace(replace(replace(str, " ", ""), "if(", ""), ")", "");
+	int start = str.find_first_of('(') + 1;
+	int end = str.find_last_of(')') - 1;
+	return substring(str, start, end);
 }
 
 string parseFunctionCall(const string& str)
