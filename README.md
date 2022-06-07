@@ -4,6 +4,17 @@ N-Sharp, a fully custom interpreted and dynamically typed scripting language wit
 
 # Syntax
 
+**Including another N-Sharp file**
+
+```
+using NS.Graphics
+using NS.Vec2
+using NS.Physics
+using NS.Input
+// ect
+// using path.to.file.nsfile
+```
+
 **Declaring a variable**
 
 ```
@@ -18,18 +29,6 @@ var variableName = "Hello"
 
 // bool
 var variableName = true
-
-// Reading from function
-var variableName = function()
-```
-
-**Declaring a global variable** (will not get deleted when the function ends)
-
-```
-function testFunction()
-{
-    global variableName = 123
-}
 ```
 
 **Declaring a function**
@@ -64,35 +63,102 @@ Returns the uptime of the script in milliseconds <br>
 
 ## Graphics
 
-`NS.Graphics.Init(width, height, title)` <br>
+**DO THIS FIRST** <br>
+`using NS.Graphics` <br>
+Includes the N-Sharp Graphics class <br>
+
+`Graphics.Init(width, height, title)` <br>
 `Returns NULL` <br>
 Initializes the OpenGL context and creates a window <br>
-`NS.Graphics.WindowShouldClose()` <br>
+`Graphics.WindowShouldClose()` <br>
 `Returns bool` <br>
 Checks if the window should exit and returns it <br>
-`NS.Graphics.Begin()` <br>
+`Graphics.Begin()` <br>
 `Returns NULL` <br>
 Prepares the graphics engine for rendering <br>
-`NS.Graphics.End()` <br>
+`Graphics.Clear(r, g, b)` <br>
+`Returns NULL` <br>
+Clears the screen with the rgb color given as parameter
+`Graphics.End()` <br>
 `returns NULL` <br>
 Draws the final picture onto the window <br>
+
+## Input
+
+**DO THIS FIRST** <br>
+`using NS.Input` <br>
+Includes the N-Sharp Input class <br>
+
+`Input.IsKeyDown(keyname)` <br>
+`Returns bool` <br>
+Returns true if the key is being held down <br>
+
+`Input.IsKeyPressed(keyname)` <br>
+`Returns bool` <br>
+Return true during the frame the key was pressed <br>
+
+`Input.IsMouseButtonDown(buttoncode)` <br>
+`Returns bool` <br>
+Returns true when the mouse button is being held down <br>
+
+`Input.GetMousePosition()` <br>
+`Returns vec2` <br>
+Returns the mouse position as Vector2 <br>
+
+`Input.GetMouseScroll()` <br>
+`Returns vec2` <br>
+Returns the mouse scroll as Vector2 <br>
+
+## Vector2
+
+**DO THIS FIRST** <br>
+`using NS.Vec2` <br>
+Includes the N-Sharp Vec2 class <br>
+
+`Vec2.Create(x, y)` <br>
+`Returns vec2` <br>
+Creates a new Vector2 with the given x and y
+
+`Vec2.GetX(vec2)` <br>
+`Returns float` <br>
+Returns the current x value of the given vector <br>
+
+`Vec2.GetY(vec2)` <br>
+`Returns float` <br>
+Returns the current y value of the given vector <br>
+
+`Vec2.Compare(vec1, vec2)` <br>
+`Returns bool` <br>
+Compares two of the given vectors and returns true if it contains the same value <br>
+
+`Vec2.Add(vec1, vec2)` <br>
+`Returns vec2` <br>
+Returns the sum of vec1 and vec2
+
+## Physics
+
+**DO THIS FIRST** <br>
+`using NS.Physics` <br>
+Includes the N-Sharp Physics class <br>
+
+`Physics.DoesCollide(position1, scale1, position2, scale2)` <br>
+`Returns bool` <br>
+Checks for collision between the two rects
 
 # Sample Programs
 
 ## Sample Console Program
 
 ```
-// Provides the input(question) function
-// which is better than NS.System.ReadLine()
-using NS.Utility
-
 // Declaring variables
 var name = ""
 var color = ""
 
 // Reading data
-name = input("Please enter your name: ")
-color = input("Please enter your favorite color: ")
+NS.System.PrintLine("Please enter your name: ")
+name = NS.System.ReadLine()
+NS.System.PrintLine("Please enter your favorite color: ")
+color = NS.System.ReadLine()
 
 // Setting text color
 NS.System.SetTextColor(color)
@@ -104,57 +170,30 @@ NS.System.PrintLine(name, ", Welcome to N-Sharp.")
 ## Sample Window Program
 
 ```
+// Including the N-Sharp Graphics class
+using NS.Graphics
+
 // Declaring variables
 var windowWidth = 800
 var windowHeight = 600
 var windowTitle = "Test"
-var fps = 0
-var time = 0.0
-var lastTick = NS.System.GetTime()
-
-// Update function
-function update(deltaTime)
-{
-	time = time + deltaTime
-
-	if (time >= 1)
-	{
-		NS.System.PrintLine("FPS: ", fps)
-		fps = 0
-		time = 0
-	}
-
-	fps = fps + 1
-}
-
-// Render function
-function render()
-{
-}
 
 // Main function
 function main()
 {
 	// Initializing the OpenGL Context and creating a window
-	NS.Graphics.Init(windowWidth, windowHeight, windowTitle)
+	Graphics.Init(windowWidth, windowHeight, windowTitle)
 
 	// Game Loop until window closes
-	while (!NS.Graphics.WindowShouldClose())
+	while (!Graphics.WindowShouldClose())
 	{
-		// Delta Time calculation
-		var now = NS.System.GetTime()
-		var deltaTime = now - lastTick
-		lastTick = now
-
-		// Calling the update function
-		update(deltaTime)
-
 		// Preparing the graphics engine for rendering
-		NS.Graphics.Begin()
-		// Calling the render function
-		render()
+		Graphics.Begin()
+		// Clearing the screen with white color
+		Graphics.Clear(1, 1, 1)
+		
 		// Telling the graphics engine that we have done our drawing
-		NS.Graphics.End()
+		Graphics.End()
 	}
 }
 
