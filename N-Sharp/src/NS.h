@@ -48,10 +48,12 @@
 #define NSharpNULL make_pair<string, boost::any>("NULL", NULL);
 #define NSharpVariable pair<string, boost::any>
 #define NSharpFunction pair<vector<string>, vector<string>>
+#define NSharpClass pair<map<string, NSharpFunction>, map<string, NSharpVariable>>
 
 using namespace std;
 
 NSharpVariable createVariable(string type, boost::any value);
+NSharpVariable createClassObject(string className, map<string, NSharpVariable> variables, map<string, NSharpFunction> functions);
 
 void setColor(int color, bool fromScript = false);
 void logInfo(const string& message);

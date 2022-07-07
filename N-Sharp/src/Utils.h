@@ -2,6 +2,7 @@
 
 #include "NS.h"
 #include "Interpreter.h"
+#include "InternalClasses.h"
 
 struct VariableType {
 	VariableType(string type, string name, string value) {
@@ -20,6 +21,8 @@ int anyAsInt(boost::any& any);
 float anyAsFloat(boost::any& any);
 bool anyAsBool(boost::any& any);
 glm::vec2 anyAsVector2(boost::any& any);
+vector<NSharpVariable> anyAsArray(boost::any& any);
+NSharpClass anyAsClass(boost::any& any);
 
 NSharpVariable getAnyFromParameter(const string& param, Interpreter& interpreter);
 

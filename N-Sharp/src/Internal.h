@@ -3,6 +3,8 @@
 #include "Interpreter.h"
 #include "OpenGL/OpenGL.h"
 
+#pragma once
+
 NSharpVariable NSFunction(string name, vector<NSharpVariable> params, Interpreter& interpreter) {
 	try {
 		/* System functions */
@@ -10,7 +12,13 @@ NSharpVariable NSFunction(string name, vector<NSharpVariable> params, Interprete
 			if ((int)params.size() == 0) throw exception();
 
 			for (int i = 0; i < (int)params.size(); i++) {
-				cout << anyAsString(params[i].second);
+				if (trim(params[i].first) == "Array") {
+					NSharpClass c = anyAsClass(params[i].second);
+					cout << anyAsString(c.second["arr"].second);
+				}
+				else {
+					cout << anyAsString(params[i].second);
+				}
 			}
 
 			cout << endl;
@@ -210,6 +218,25 @@ NSharpVariable NSFunction(string name, vector<NSharpVariable> params, Interprete
 
 			glm::vec2 v = anyAsVector2(params[0].second);
 			return createVariable("float", v.y);
+		}
+
+		/* Array functions */
+		if (name == "NS.Array._CreateArray_") {
+			if (params.size() != 0) throw exception();
+
+			vector<NSharpVariable> arr;
+
+			return createVariable("array", arr);
+		}
+		else if (name == "NS.Array._Push_") {
+			if (params.size() != 2) throw exception();
+
+			vector<NSharpVariable> arr = anyAsArray(params[0].second);
+			NSharpVariable value = params[1];
+
+			arr.push_back(value);
+
+			return createVariable("array", arr);
 		}
 	}
 	catch (exception) {

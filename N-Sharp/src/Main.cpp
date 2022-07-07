@@ -60,6 +60,11 @@ NSharpVariable createVariable(string type, boost::any value)
 	return make_pair(type, value);
 }
 
+NSharpVariable createClassObject(string className, map<string, NSharpVariable> variables, map<string, NSharpFunction> functions)
+{
+	return createVariable(className, make_pair(functions, variables));
+}
+
 int scriptColor = WHITE;
 void setColor(int color, bool fromScript) {
 	if (fromScript) scriptColor = color;

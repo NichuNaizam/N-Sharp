@@ -143,6 +143,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="src\InternalClasses.cpp" />
     <ClCompile Include="src\OpenGL\Input.cpp" />
     <ClCompile Include="lib\glad.c" />
     <ClCompile Include="src\OpenGL\Shader.cpp" />
@@ -154,6 +155,7 @@
     <ClCompile Include="src\OpenGL\Window.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="src\InternalClasses.h" />
     <ClInclude Include="src\OpenGL\Input.h" />
     <ClInclude Include="lib\stb_image.h" />
     <ClInclude Include="src\OpenGL\Shader.h" />
@@ -170,7 +172,6 @@
     <None Include="internal_libraries\NS\Input.ns" />
     <None Include="internal_libraries\NS\Physics.ns" />
     <None Include="internal_libraries\NS\Vec2.ns" />
-    <None Include="script.ns" />
     <None Include="test\Game\Ball.ns" />
     <None Include="test\Main.ns" />
   </ItemGroup>

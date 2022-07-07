@@ -20,6 +20,8 @@ public:
 	bool isIfStatement(const string& str);
 	bool isReturnStatement(const string& str);
 	bool isWhileStatement(const string& str);
+	bool isArrayDefinition(const string& str);
+	bool isVariable(const string& str);
 
 	int searchLocalVariables(const string& name);
 	string getLine();
@@ -32,5 +34,6 @@ private:
 	otherFilesType otherFiles;
 	string currentLine;
 	string otherClassName = "";
+	string otherVariableName = "";
 	int scopeHeight = 0;
 };

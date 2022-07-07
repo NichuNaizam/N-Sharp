@@ -19,15 +19,18 @@ NSharpVariable Interpreter::runFunction(const string& str, vector<NSharpVariable
 		string fileName = splitted[0];
 		string functionName = splitted[splitted.size() - 1];
 
-		if (otherFiles.find(fileName) != otherFiles.end()) {
-			if (otherFiles[fileName].first.find(functionName) != otherFiles[fileName].first.end()) {
-				pair<vector<string>, vector<string>> data = otherFiles[fileName].first[functionName];
+		if (isVariable(fileName)) {
+			boost::any value = getVariable(fileName).second;
+			NSharpClass c = anyAsClass(value);
+
+			if (c.first.find(functionName) != c.first.end()) {
+				pair<vector<string>, vector<string>> data = c.first[functionName];
 				vector<string> parameters = data.first;
 				vector<string> functionCode = data.second;
 				NSharpVariable returnValue = createVariable("NULL", NULL);
 
 				if (arguments.size() < parameters.size() || arguments.size() > parameters.size()) {
-					logScriptError("Class function " + str + " does not take " + to_string(arguments.size()) + " arguments", getLine());
+					logScriptError("function " + str + " does not take " + to_string(arguments.size()) + " arguments", getLine());
 				}
 
 				if ((int)arguments.size() > 0) {
@@ -36,25 +39,61 @@ NSharpVariable Interpreter::runFunction(const string& str, vector<NSharpVariable
 					}
 				}
 
-				string temp = otherClassName;
-				otherClassName = fileName;
+				string temp = otherVariableName;
+				otherVariableName = fileName;
 				returnValue = start(functionCode);
-				otherClassName = temp;
+				otherVariableName = temp;
 
 				localVariables[scopeHeight + 1].clear();
 
 #if PRINT_LOGS
-				logInfo("Class function " + trim(str) + " has been executed, return value: " + anyAsString(returnValue.second));
+				logInfo("function " + trim(str) + " has been executed, return value: " + anyAsString(returnValue.second));
 #endif // PRINT_LOGS
 
 				return returnValue;
 			}
 			else {
-				logScriptError("Undefined class function: " + functionName, getLine());
+				logScriptError("There is no function called " + functionName + " in " + fileName, getLine());
 			}
 		}
 		else {
-			logScriptError("Undefined class: " + fileName, getLine());
+			if (otherFiles.find(fileName) != otherFiles.end()) {
+				if (otherFiles[fileName].first.find(functionName) != otherFiles[fileName].first.end()) {
+					pair<vector<string>, vector<string>> data = otherFiles[fileName].first[functionName];
+					vector<string> parameters = data.first;
+					vector<string> functionCode = data.second;
+					NSharpVariable returnValue = createVariable("NULL", NULL);
+
+					if (arguments.size() < parameters.size() || arguments.size() > parameters.size()) {
+						logScriptError("Class function " + str + " does not take " + to_string(arguments.size()) + " arguments", getLine());
+					}
+
+					if ((int)arguments.size() > 0) {
+						for (int i = 0; i < (int)parameters.size(); i++) {
+							localVariables[scopeHeight + 1][parameters[i]] = arguments[i];
+						}
+					}
+
+					string temp = otherClassName;
+					otherClassName = fileName;
+					returnValue = start(functionCode);
+					otherClassName = temp;
+
+					localVariables[scopeHeight + 1].clear();
+
+#if PRINT_LOGS
+					logInfo("Class function " + trim(str) + " has been executed, return value: " + anyAsString(returnValue.second));
+#endif // PRINT_LOGS
+
+					return returnValue;
+				}
+				else {
+					logScriptError("Undefined class function: " + functionName, getLine());
+				}
+			}
+			else {
+				logScriptError("Undefined class: " + fileName, getLine());
+			}
 		}
 	}
 
@@ -92,6 +131,22 @@ NSharpVariable Interpreter::runFunction(const string& str, vector<NSharpVariable
 
 NSharpVariable Interpreter::getVariable(const string& name)
 {
+	if (!otherVariableName.empty()) {
+		int variableScope = searchLocalVariables(name);
+		if (scopeHeight > 0 && variableScope != -1) {
+			return localVariables[variableScope][name];
+		}
+
+		boost::any value = getVariable(otherVariableName).second;
+		NSharpClass c = anyAsClass(value);
+
+		if (c.second.find(name) == c.second.end()) {
+			logScriptError("Variable not defined error: " + name, getLine());
+		}
+
+		return c.second[name];
+	}
+
 	if (!otherClassName.empty()) {
 		int variableScope = searchLocalVariables(name);
 		if (scopeHeight > 0 && variableScope != -1) {
@@ -140,7 +195,26 @@ NSharpVariable Interpreter::getVariable(const string& name)
 
 void Interpreter::setVariable(const string& name, NSharpVariable data, bool forceGlobal)
 {
-	if (!otherClassName.empty()) {
+	if (!otherVariableName.empty()) {
+		NSharpVariable var = getVariable(otherVariableName);
+		string type = var.first;
+		boost::any value = var.second;
+		NSharpClass c = anyAsClass(value);
+
+		if (c.second.find(name) != c.second.end()) {
+			c.second[name] = data;
+			
+			if (searchLocalVariables(otherVariableName) == -1) {
+				globalVariables[otherVariableName] = createVariable(type, c);
+			}
+			else {
+				int loc = searchLocalVariables(otherVariableName);
+
+				localVariables[loc][otherVariableName] = createVariable(type, c);
+			}
+		}
+	}
+	else if (!otherClassName.empty()) {
 		if (otherFiles[otherClassName].second.find(name) != otherFiles[otherClassName].second.end()) {
 			otherFiles[otherClassName].second[name] = data;
 		}
@@ -199,6 +273,23 @@ int Interpreter::searchLocalVariables(const string& name)
 	return -1;
 }
 
+bool Interpreter::isVariable(const string& str) {
+	string name = "";
+
+	if (contains(str, ".")) {
+		name = split(str, '.')[0];
+	}
+	else {
+		name = str;
+	}
+
+	if (globalVariables.find(name) != globalVariables.end() || searchLocalVariables(name) != -1) {
+		return true;
+	}
+
+	return false;
+}
+
 bool Interpreter::isFunction(const string& str) {
 	return count(str, '(') > 0 && count(str, ')') > 0 && !isNumber(trim(replace(replace(str, ")", ""), "(", ""))) && count(trim(str), '=') == 0;
 }
@@ -207,6 +298,14 @@ bool Interpreter::isVariableDeclaration(const string& line)
 {
 	VariableType type = getVariableType(line);
 	string str = split(line, '=')[0];
+
+	if (!otherVariableName.empty()) {
+		boost::any value = getVariable(otherVariableName);
+		NSharpClass c = anyAsClass(value);
+
+		string predictedVarName = trim(split(replace(str, " ", ""), '=')[0]);
+		return startsWith(trim(str), "var ") || (localVariables[scopeHeight].find(predictedVarName) != localVariables[scopeHeight].end() || c.second.find(predictedVarName) != c.second.end());
+	}
 
 	if (!otherClassName.empty()) {
 		string predictedVarName = trim(split(replace(str, " ", ""), '=')[0]);
@@ -264,6 +363,11 @@ bool Interpreter::isReturnStatement(const string& str)
 bool Interpreter::isWhileStatement(const string& str)
 {
 	return startsWith(trim(str), "while");
+}
+
+bool Interpreter::isArrayDefinition(const string& str)
+{
+	return trim(str) == "[]";
 }
 
 string Interpreter::getLine()

@@ -24,7 +24,24 @@ string anyAsString(boost::any& any)
 						return "(" + to_string(boost::any_cast<glm::vec2>(any).x) + ", " + to_string(boost::any_cast<glm::vec2>(any).y) + ")";
 					}
 					catch (exception) {
-						logError("Invalid data type encountered! (anyAsString)");
+						try {
+							vector<NSharpVariable> arr = boost::any_cast<vector<NSharpVariable>>(any);
+							string output = "[";
+
+							for (int i = 0; i < (int)arr.size(); i++) {
+								output += anyAsString(arr[i].second);
+
+								if (i != arr.size() - 1) {
+									output += ", ";
+								}
+							}
+
+							output += "]";
+							return output;
+						}
+						catch (exception) {
+							return "Custom class";
+						}
 					}
 				}
 			}
@@ -139,6 +156,26 @@ glm::vec2 anyAsVector2(boost::any& any)
 	}
 }
 
+vector<NSharpVariable> anyAsArray(boost::any& any)
+{
+	try {
+		return boost::any_cast<vector<NSharpVariable>>(any);
+	}
+	catch (exception) {
+		return vector<NSharpVariable>();
+	}
+}
+
+NSharpClass anyAsClass(boost::any& any)
+{
+	try {
+		return boost::any_cast<NSharpClass>(any);
+	}
+	catch (exception) {
+		logError("An Error occured (anyAsClass)");
+	}
+}
+
 NSharpVariable getAnyFromParameter(const string& param, Interpreter& interpreter)
 {
 	if (interpreter.isFunction(param)) {
@@ -207,6 +244,18 @@ NSharpVariable getAnyFromParameter(const string& param, Interpreter& interpreter
 #endif // PRINT_LOGS
 
 		return createVariable("float", stof(trim(param)));
+	}
+	else if (interpreter.isArrayDefinition(param)) {
+#if PRINT_LOGS
+		logInfo("Guessing " + trim(param) + " as array");
+#endif // PRINT_LOGS
+
+		vector<string> code = getArrayClass();
+
+		Interpreter i;
+		i.start(code, true);
+
+		return createClassObject("Array", i.globalVariables, i.functions);
 	}
 	else {
 #if PRINT_LOGS
