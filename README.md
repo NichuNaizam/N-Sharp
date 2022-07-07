@@ -1,3 +1,7 @@
+<p align="center">
+    <img src="https://github.com/NichuNaizam/N-Sharp/blob/master/N-Sharp/res/N%23.png" width="120px">
+</p>
+
 # N-Sharp - A fully custom scripting language written in C++
 
 N-Sharp, a fully custom interpreted and dynamically typed scripting language with OpenGL backend written in C++ mainly focused on Game development ease without Game Engines
@@ -78,7 +82,7 @@ Checks if the window should exit and returns it <br>
 Prepares the graphics engine for rendering <br>
 `Graphics.Clear(r, g, b)` <br>
 `Returns NULL` <br>
-Clears the screen with the rgb color given as parameter
+Clears the screen with the rgb color given as parameter <br>
 `Graphics.End()` <br>
 `returns NULL` <br>
 Draws the final picture onto the window <br>
