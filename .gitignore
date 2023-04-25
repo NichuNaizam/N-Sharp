@@ -1,2 +1,11 @@
-Debug
 .vs
+*.pdb
+*.pdb
+*.lastbuildstate
+*.obj
+*.ilk
+*.idb
+*.txt
+*.tlog
+*.log
+*.recipe

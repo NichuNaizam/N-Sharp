@@ -1,0 +1,90 @@
+var initialized = false
+
+function Init(width, height, title)
+{
+    if (initialized)
+    {
+        NS.System.PrintLine("Graphics already initialized!")
+        return NULL
+    }
+
+    initialized = true
+    return NS.Graphics._Init_GPU_(width, height, title)
+}
+
+function WindowShouldClose()
+{
+    if (!initialized)
+    {
+        NS.System.PrintLine("Graphics not initialized!")
+        return true
+    }
+
+    return NS.Graphics._WindowShouldClose_()
+}
+
+function Begin()
+{
+    if (!initialized)
+    {
+        NS.System.PrintLine("Graphics not initialized!")
+        return NULL
+    }
+
+    return NS.Graphics._Begin_()
+}
+
+function Clear(r, g, b)
+{
+    if (!initialized)
+    {
+        NS.System.PrintLine("Graphics not initalized!")
+        return NULL
+    }
+
+    return NS.Graphics._Clear_(r, g, b)
+}
+
+function LoadTexture(path)
+{
+    if (!initialized)
+    {
+        NS.System.PrintLine("Graphics not initialized!")
+        return 0
+    }
+
+    return NS.Graphics._LoadTexture_(path)
+}
+
+function RenderTexture(texture, position, rotation, scale)
+{
+    if (!initialized)
+    {
+        NS.System.PrintLine("Graphics not initialized!")
+        return NULL
+    }
+
+    return NS.Graphics._RenderTexture_(texture, position, rotation, scale)
+}
+
+function End()
+{
+    if (!initialized)
+    {
+        NS.System.PrintLine("Graphics not initialized!")
+        return NULL
+    }
+
+    return NS.Graphics._End_()
+}
+
+function Terminate()
+{
+    if (!initialized)
+    {
+        NS.System.PrintLine("Graphics not initialized!")
+        return NULL
+    }
+
+    return NS.Graphics._Terminate_()
+}

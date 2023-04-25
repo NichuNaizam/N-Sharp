@@ -1,1 +1,4 @@
-NS.System.PrintLine("Hello World"g)
+NS.System.PrintLine("Array Test")
+
+var array = []
+NS.System.PrintLine(array)

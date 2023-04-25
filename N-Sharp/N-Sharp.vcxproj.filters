@@ -42,6 +42,9 @@
     <ClCompile Include="src\OpenGL\Input.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="src\InternalClasses.h">
+      <Filter>Source Files</Filter>
+    </ClCompile>
     <ClCompile Include="src\InternalClasses.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -75,9 +78,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="src\OpenGL\Input.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="src\InternalClasses.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
