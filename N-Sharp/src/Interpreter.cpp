@@ -367,7 +367,7 @@ bool Interpreter::isWhileStatement(const string& str)
 
 bool Interpreter::isArrayDefinition(const string& str)
 {
-	return trim(str) == "[]";
+	return startsWith(trim(str), "[") && endsWith(trim(str), "]");
 }
 
 string Interpreter::getLine()
