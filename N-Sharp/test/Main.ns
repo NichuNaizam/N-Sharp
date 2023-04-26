@@ -1,4 +1,10 @@
-NS.System.PrintLine("Array Test")
+using NS.System
+using NS.Array
 
-var array = [1, 2]
-NS.System.PrintLine(array)
+System.PrintLine("Array Test")
+
+var array = Array.Create()
+array = Array.Push(array, "Hello")
+array = Array.Push(array, "World")
+System.PrintLine(array)
+System.PrintLine(Array.Get(array, 0) + ", " + Array.Get(array, 1))

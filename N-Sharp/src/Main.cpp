@@ -20,6 +20,7 @@ int main(int argc, char** argv) {
 		}
 	}
 
+	// Loading the script file from arguments
 	string scriptFile = argv[1];
 	if (scriptFile.substr(scriptFile.size() - 3) != ".ns") {
 		cout << "You can only provide a .ns script" << endl;
@@ -55,11 +56,13 @@ int main(int argc, char** argv) {
 	return 0;
 }
 
+// Create a variable object (VARIABLE TYPE, VALUE)
 NSharpVariable createVariable(string type, boost::any value)
 {
 	return make_pair(type, value);
 }
 
+// Create a class instance (CLASSNAME, map<VARIABLE NAME, NSHARPVARIABLE>, map<FUNCTION NAME, NSHARPFUNCTION>)
 NSharpVariable createClassObject(string className, map<string, NSharpVariable> variables, map<string, NSharpFunction> functions)
 {
 	return createVariable(className, make_pair(functions, variables));

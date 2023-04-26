@@ -16,7 +16,7 @@ struct VariableType {
 	string value;
 };
 
-string anyAsString(boost::any& any);
+string anyAsString(boost::any& any, bool doubleQuotes = false);
 int anyAsInt(boost::any& any);
 float anyAsFloat(boost::any& any);
 bool anyAsBool(boost::any& any);

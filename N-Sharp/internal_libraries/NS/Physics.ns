@@ -1,0 +1,4 @@
+function DoesCollide(pos1, scale1, pos2, scale2)
+{
+    return NS.Physics._DoesCollide_(pos1, scale1, pos2, scale2)
+}

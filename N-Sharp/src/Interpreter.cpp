@@ -3,6 +3,7 @@
 #include "Internal.h"
 #include "Eval.h"
 
+// Gets called when the interpreter reaches a function call
 NSharpVariable Interpreter::runFunction(const string& str, vector<NSharpVariable> arguments) {
 	if (startsWith(trim(str), "NS.")) {
 		NSharpVariable returnValue = NSFunction(str, arguments, *this);
@@ -13,8 +14,8 @@ NSharpVariable Interpreter::runFunction(const string& str, vector<NSharpVariable
 
 		return returnValue;
 	}
-
-	if (contains(str, ".")) {
+	
+	if (contains(str, ".")) { // This expression triggers if it was a class function
 		vector<string> splitted = split(trim(str), '.');
 		string fileName = splitted[0];
 		string functionName = splitted[splitted.size() - 1];
@@ -97,7 +98,7 @@ NSharpVariable Interpreter::runFunction(const string& str, vector<NSharpVariable
 		}
 	}
 
-	if (functions.find(trim(str)) != functions.end()) {
+	if (functions.find(trim(str)) != functions.end()) { // This triggers if it is a normal function
 		pair<vector<string>, vector<string>> data = functions[trim(str)];
 		vector<string> parameters = data.first;
 		vector<string> functionCode = data.second;
@@ -129,6 +130,7 @@ NSharpVariable Interpreter::runFunction(const string& str, vector<NSharpVariable
 	return NSharpNULL;
 }
 
+// Fetches the variable from the globalVariables or localVariable lists
 NSharpVariable Interpreter::getVariable(const string& name)
 {
 	if (!otherVariableName.empty()) {
@@ -193,6 +195,7 @@ NSharpVariable Interpreter::getVariable(const string& name)
 	return NSharpNULL;
 }
 
+// Sets or Creates new variables on runtime
 void Interpreter::setVariable(const string& name, NSharpVariable data, bool forceGlobal)
 {
 	if (!otherVariableName.empty()) {
@@ -260,6 +263,7 @@ void Interpreter::setVariable(const string& name, NSharpVariable data, bool forc
 #endif // PRINT_LOGS
 }
 
+// Searches if there is a variable with the name and returns the index if there is or it returns -1
 int Interpreter::searchLocalVariables(const string& name)
 {
 	if (scopeHeight > 0) {
@@ -273,6 +277,12 @@ int Interpreter::searchLocalVariables(const string& name)
 	return -1;
 }
 
+// Checks if the passed string is a string concatenation expression
+bool Interpreter::isStringConcatenation(const string& str) {
+	return contains(trim(str), "+") && contains(trim(str), "\"");
+}
+
+// Checks if the passed string is a identifier expression
 bool Interpreter::isVariable(const string& str) {
 	string name = "";
 
@@ -290,10 +300,19 @@ bool Interpreter::isVariable(const string& str) {
 	return false;
 }
 
+// Checks if the passed string is a function expression
 bool Interpreter::isFunction(const string& str) {
-	return count(str, '(') > 0 && count(str, ')') > 0 && !isNumber(trim(replace(replace(str, ")", ""), "(", ""))) && count(trim(str), '=') == 0;
+	bool function = true;
+	string trimmed = trim(str);
+	string noparenthesis = removeParenthesis(trimmed);
+	vector<string> params = splitArguments(noparenthesis);
+
+	if (count(trimmed, '(') == 0 || !endsWith(trimmed, ")") || count(trimmed, '=') > 0) function = false;
+
+	return function;
 }
 
+// Checks if the passed string is a variable declaration
 bool Interpreter::isVariableDeclaration(const string& line)
 {
 	VariableType type = getVariableType(line);
@@ -335,46 +354,55 @@ bool Interpreter::isVariableDeclaration(const string& line)
 	return startsWith(trim(str), "var ") || (localVariables[scopeHeight].find(predictedVarName) != localVariables[scopeHeight].end() || globalVariables.find(predictedVarName) != globalVariables.end());
 }
 
+// Checks if the passed string is a math expression
 bool Interpreter::isMathExpression(const string& str)
 {
 	return count(str, '\"') == 0 && (count(str, '+') != 0 || count(str, '-') != 0 || count(str, '*') != 0 || count(str, '/') != 0 || count(str, '^') != 0);
 }
 
+// Checks if the passed string has a using tag
 bool Interpreter::isUsingTag(const string& str)
 {
 	return startsWith(trim(str), "using ");
 }
 
+// Checks if the passed string is a function definition
 bool Interpreter::isFunctionDefinition(const string& str)
 {
 	return startsWith(trim(str), "function ") && count(str, '(') > 0 && count(str, ')') > 0;
 }
 
+// Checks if the passed string is a if statement
 bool Interpreter::isIfStatement(const string& str)
 {
 	return startsWith(trim(str), "if");
 }
 
+// Checks if the passed string is a return statement
 bool Interpreter::isReturnStatement(const string& str)
 {
 	return startsWith(trim(str), "return ");
 }
 
+// Checks if the passed string is a while statement
 bool Interpreter::isWhileStatement(const string& str)
 {
 	return startsWith(trim(str), "while");
 }
 
+// Checks if the passed string is a array definition
 bool Interpreter::isArrayDefinition(const string& str)
 {
 	return startsWith(trim(str), "[") && endsWith(trim(str), "]");
 }
 
+// Gets the current line of code which is being interpreted
 string Interpreter::getLine()
 {
 	return currentLine;
 }
 
+// Starts the interpreter
 NSharpVariable Interpreter::start(vector<string>& code, bool isMain) {
 	globalVariables["NULL"] = NSharpNULL;
 	NSharpVariable toReturn = NSharpNULL;
@@ -397,6 +425,7 @@ NSharpVariable Interpreter::start(vector<string>& code, bool isMain) {
 	return toReturn;
 }
 
+// Executes a sinle line
 NSharpVariable Interpreter::executeLine(const string& str, vector<string> code, int* curIndex) {
 	if (startsWith(str, "//") || str.empty()) return NSharpNULL;
 

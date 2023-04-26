@@ -2,10 +2,12 @@
 #include "Interpreter.h"
 #include "Eval.h"
 
-string anyAsString(boost::any& any)
+string anyAsString(boost::any& any, bool doubleQuotes)
 {
 	try {
-		return boost::any_cast<string>(any);
+		std::string value = boost::any_cast<string>(any);
+		if (doubleQuotes) return "\"" + value + "\"";
+		return value;
 	}
 	catch (exception) {
 		try {
@@ -29,7 +31,7 @@ string anyAsString(boost::any& any)
 							string output = "[";
 
 							for (int i = 0; i < (int)arr.size(); i++) {
-								output += anyAsString(arr[i].second);
+								output += anyAsString(arr[i].second, true);
 
 								if (i != arr.size() - 1) {
 									output += ", ";
@@ -40,7 +42,16 @@ string anyAsString(boost::any& any)
 							return output;
 						}
 						catch (exception) {
-							return "Custom class";
+							try {
+								NSharpClass c = boost::any_cast<NSharpClass>(any);
+								json j;
+								j["functions"] = c.first;
+
+								return j;
+							}
+							catch (exception) {
+								logError("Unknown Data Type");
+							}
 						}
 					}
 				}
@@ -173,12 +184,28 @@ NSharpClass anyAsClass(boost::any& any)
 	}
 	catch (exception) {
 		logError("An Error occured (anyAsClass)");
+		return NSharpClass();
 	}
 }
 
 NSharpVariable getAnyFromParameter(const string& param, Interpreter& interpreter)
 {
-	if (interpreter.isFunction(param)) {
+	if (interpreter.isStringConcatenation(param)) {
+#if PRINT_LOGS
+		logInfo("Guessing " + trim(param) + " as String Concatenation Expression");
+#endif // PRINT_LOGS
+
+		vector<string> params = splitOutsideDoubleQuotes(trim(param), '+');
+		std::string newString = "";
+
+		for (string s : params) {
+			NSharpVariable v = getAnyFromParameter(s, interpreter);
+			newString += anyAsString(v.second);
+		}
+
+		return createVariable("string", newString);
+	}
+	else if (interpreter.isFunction(param)) {
 #if PRINT_LOGS
 		logInfo("Guessing " + trim(param) + " as function");
 #endif // PRINT_LOGS
@@ -244,18 +271,6 @@ NSharpVariable getAnyFromParameter(const string& param, Interpreter& interpreter
 #endif // PRINT_LOGS
 
 		return createVariable("float", stof(trim(param)));
-	}
-	else if (interpreter.isArrayDefinition(param)) {
-#if PRINT_LOGS
-		logInfo("Guessing " + trim(param) + " as array");
-#endif // PRINT_LOGS
-
-		vector<string> code = getArrayClass();
-
-		Interpreter i;
-		i.start(code, true);
-
-		return createClassObject("Array", i.globalVariables, i.functions);
 	}
 	else {
 #if PRINT_LOGS
@@ -501,19 +516,19 @@ string parseUsingTag(const string& str)
 	string s = trim(replace(replace(str, "using ", ""), ".", "/")) + ".ns";
 	string path = "";
 
-#ifdef DEBUG
+#ifdef _DEBUG
 	path = startsWith(s, "NS/") ? "./internal_libraries/" + s : "./test/" + s;
 #else
 	path = startsWith(s, "NS/") ? getExePath() + "/internal_libraries/" + s : s;
-#endif // DEBUG
+#endif // _DEBUG
 
 	return path;
 }
 
 string parseIfStatement(const string& str)
 {
-	int start = str.find_first_of('(') + 1;
-	int end = str.find_last_of(')') - 1;
+	int start = (int)str.find_first_of('(') + 1;
+	int end = (int)str.find_last_of(')') - 1;
 	return substring(str, start, end);
 }
 

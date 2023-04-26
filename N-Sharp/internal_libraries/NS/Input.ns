@@ -1,0 +1,24 @@
+function IsKeyDown(key)
+{
+    return NS.Input._IsKeyDown_(key)
+}
+
+function IsKeyPressed(key)
+{
+    return NS.Input._IsKeyPressed_(key)
+}
+
+function IsMouseButtonDown(keycode)
+{
+    return NS.Input._IsMouseButtonDown_(keycode)
+}
+
+function GetMousePosition()
+{
+    return NS.Input._GetMousePosition_()
+}
+
+function GetMouseScroll()
+{
+    return NS.Input._GetMouseScroll_()
+}

@@ -12,6 +12,7 @@ public:
 	pair<string, boost::any> getVariable(const string& name);
 	void setVariable(const string& name, NSharpVariable data, bool forceGlobal = false);
 
+	bool isStringConcatenation(const string& str);
 	bool isFunction(const string& str);
 	bool isVariableDeclaration(const string& str);
 	bool isMathExpression(const string& str);

@@ -1,10 +1,11 @@
 #pragma once
 
-#ifdef DEBUG
+#ifdef _DEBUG
 #define PRINT_LOGS true
+#define BOOST_CONFIG_SUPPRESS_OUTDATED_MESSAGE
 #else
 #define PRINT_LOGS false
-#endif // DEBUG
+#endif // _DEBUG
 
 #define VERSION "0.1.4-BETA"
 
@@ -38,6 +39,7 @@
 #include <Windows.h>
 
 #include <boost/any.hpp>
+#include <nlohmann/json.hpp>
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
 #include <glm/glm.hpp>
@@ -51,6 +53,7 @@
 #define NSharpClass pair<map<string, NSharpFunction>, map<string, NSharpVariable>>
 
 using namespace std;
+using namespace nlohmann;
 
 NSharpVariable createVariable(string type, boost::any value);
 NSharpVariable createClassObject(string className, map<string, NSharpVariable> variables, map<string, NSharpFunction> functions);

@@ -88,6 +88,8 @@
     <None Include="internal_libraries\NS\Physics.ns" />
     <None Include="test\Main.ns" />
     <None Include="test\Game\Ball.ns" />
+    <None Include="internal_libraries\NS\System.ns" />
+    <None Include="internal_libraries\NS\Array.ns" />
   </ItemGroup>
   <ItemGroup>
     <Library Include="lib\glfw3.lib" />

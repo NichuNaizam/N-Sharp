@@ -8,7 +8,7 @@
 NSharpVariable NSFunction(string name, vector<NSharpVariable> params, Interpreter& interpreter) {
 	try {
 		/* System functions */
-		if (name == "NS.System.PrintLine") {
+		if (name == "NS.System._PrintLine_") {
 			if ((int)params.size() == 0) throw exception();
 
 			for (int i = 0; i < (int)params.size(); i++) {
@@ -24,7 +24,7 @@ NSharpVariable NSFunction(string name, vector<NSharpVariable> params, Interprete
 			cout << endl;
 			return NSharpNULL;
 		}
-		else if (name == "NS.System.Print") {
+		else if (name == "NS.System._Print_") {
 			if ((int)params.size() == 0) throw exception();
 
 			for (int i = 0; i < (int)params.size(); i++) {
@@ -33,14 +33,14 @@ NSharpVariable NSFunction(string name, vector<NSharpVariable> params, Interprete
 
 			return NSharpNULL;
 		}
-		else if (name == "NS.System.ReadLine") {
+		else if (name == "NS.System._ReadLine_") {
 			if ((int)params.size() > 0) throw exception();
 
 			string input;
 			getline(cin, input);
 			return createVariable("string", input);
 		}
-		else if (name == "NS.System.SetTextColor") {
+		else if (name == "NS.System._SetTextColor_") {
 			if ((int)params.size() != 1) throw exception();
 
 			string color = anyAsString(params[0].second);
@@ -65,13 +65,12 @@ NSharpVariable NSFunction(string name, vector<NSharpVariable> params, Interprete
 
 			return NSharpNULL;
 		}
-		else if (name == "NS.System.Exit") {
+		else if (name == "NS.System._Exit_") {
 			if (params.size() != 0) throw exception();
 
-			glfwTerminate();
 			exit(0);
 		}
-		else if (name == "NS.System.GetTime") {
+		else if (name == "NS.System._GetTime_") {
 			if (params.size() != 0) throw exception();
 
 			return createVariable("float", (float)glfwGetTime());
@@ -237,6 +236,14 @@ NSharpVariable NSFunction(string name, vector<NSharpVariable> params, Interprete
 			arr.push_back(value);
 
 			return createVariable("array", arr);
+		}
+		else if (name == "NS.Array._Get_") {
+			if (params.size() != 2) throw exception();
+
+			vector<NSharpVariable> arr = anyAsArray(params[0].second);
+			int index = anyAsInt(params[1].second);
+
+			return arr[index];
 		}
 	}
 	catch (exception) {
