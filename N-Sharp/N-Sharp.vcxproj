@@ -171,9 +171,11 @@
     <ClInclude Include="src\OpenGL\Window.h" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="internal_libraries\NS\Array.ns" />
     <None Include="internal_libraries\NS\Graphics.ns" />
     <None Include="internal_libraries\NS\Input.ns" />
     <None Include="internal_libraries\NS\Physics.ns" />
+    <None Include="internal_libraries\NS\System.ns" />
     <None Include="internal_libraries\NS\Vec2.ns" />
     <None Include="test\Game\Ball.ns" />
     <None Include="test\Main.ns" />

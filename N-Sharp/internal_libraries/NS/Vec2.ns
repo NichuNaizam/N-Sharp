@@ -1,0 +1,69 @@
+function Create(x, y)
+{
+    return NS.Vector._Vec2_(x, y)
+}
+
+function GetX(v)
+{
+	return NS.Vector._GetX_(v)
+}
+
+function GetY(v)
+{
+	return NS.Vector._GetY_(v)
+}
+
+function Compare(v1, v2)
+{
+	if (GetX(v1) != GetX(v2))
+	{
+        return false	
+	}
+
+    if (GetY(v1) != GetY(v2))
+    {
+        return false
+    }
+
+    return true
+}
+
+function Add(v1, v2)
+{
+    var x1 = GetX(v1)
+    var y1 = GetY(v1)
+    var x2 = GetX(v2)
+    var y2 = GetY(v2)
+
+    return Create(x1 + x2, y1 + y2)
+}
+
+function Sub(v1, v2)
+{
+    var x1 = GetX(v1)
+    var y1 = GetY(v1)
+    var x2 = GetX(v2)
+    var y2 = GetY(v2)
+
+    return Create(x1 - x2, y1 - y2)
+}
+
+function Multiply(v1, v2)
+{
+    var x1 = GetX(v1)
+    var y1 = GetY(v1)
+    var x2 = GetX(v2)
+    var y2 = GetY(v2)
+
+    return Create(x1 * x2, y1 * y2)
+}
+
+function Divide(v1, v2)
+{
+    var x1 = GetX(v1)
+    var y1 = GetY(v1)
+    var x2 = GetX(v2)
+    var y2 = GetY(v2)
+
+    return Create(x1 / x2, y1 / y2)
+}

@@ -1,0 +1,49 @@
+function Create()
+{
+	return NS.Array._CreateArray_()
+}
+
+function Push(array, value)
+{
+	return NS.Array._Push_(array, value)
+}
+
+function Get(array, index)
+{
+	return NS.Array._Get_(array, index)
+}
+
+function Size(array)
+{
+	return NS.Array._Size_(array)
+}
+
+function Pop(array)
+{
+	return NS.Array._Pop_(array)
+}
+
+function Concat(arr1, arr2)
+{
+	return NS.Array._Concat_(arr1, arr2)
+}
+
+function Remove(arr, i)
+{
+	if (i >= Size(arr))
+	{
+		return arr
+	}
+
+	return NS.Array._Remove_(arr, i)
+}
+
+function Set(arr, v, i)
+{
+	if (Size(arr) > i)
+	{
+		return NS.Array.Set(arr, v, i)
+	}
+
+	return arr
+}

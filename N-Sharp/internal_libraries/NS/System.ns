@@ -1,0 +1,29 @@
+function PrintLine(string)
+{
+	return NS.System._PrintLine_(string)
+}
+
+function Print(string)
+{
+	return NS.System._Print_(string)
+}
+
+function ReadLine()
+{
+	return NS.System._ReadLine_()
+}
+
+function SetTextColor(color)
+{
+	return NS.System._SetTextColor_(color)
+}
+
+function Exit()
+{
+	return NS.System._Exit_()
+}
+
+function GetTime()
+{
+	return NS.System._GetTime_()
+}
