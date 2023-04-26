@@ -1,0 +1,7 @@
+using NS.System
+using NS.Array
+
+var array = Array.Create()
+array = Array.Push(array, "Hello World")
+
+System.PrintLine(array)
