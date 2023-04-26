@@ -1,10 +1,12 @@
+using NS.System
+
 var initialized = false
 
 function Init(width, height, title)
 {
     if (initialized)
     {
-        NS.System.PrintLine("Graphics already initialized!")
+        System.PrintLine("Graphics already initialized!")
         return NULL
     }
 
@@ -16,7 +18,7 @@ function WindowShouldClose()
 {
     if (!initialized)
     {
-        NS.System.PrintLine("Graphics not initialized!")
+        System.PrintLine("Graphics not initialized!")
         return true
     }
 
@@ -27,7 +29,7 @@ function Begin()
 {
     if (!initialized)
     {
-        NS.System.PrintLine("Graphics not initialized!")
+        System.PrintLine("Graphics not initialized!")
         return NULL
     }
 
@@ -38,7 +40,7 @@ function Clear(r, g, b)
 {
     if (!initialized)
     {
-        NS.System.PrintLine("Graphics not initalized!")
+        System.PrintLine("Graphics not initalized!")
         return NULL
     }
 
@@ -49,7 +51,7 @@ function LoadTexture(path)
 {
     if (!initialized)
     {
-        NS.System.PrintLine("Graphics not initialized!")
+        System.PrintLine("Graphics not initialized!")
         return 0
     }
 
@@ -60,7 +62,7 @@ function RenderTexture(texture, position, rotation, scale)
 {
     if (!initialized)
     {
-        NS.System.PrintLine("Graphics not initialized!")
+        System.PrintLine("Graphics not initialized!")
         return NULL
     }
 
@@ -71,7 +73,7 @@ function End()
 {
     if (!initialized)
     {
-        NS.System.PrintLine("Graphics not initialized!")
+        System.PrintLine("Graphics not initialized!")
         return NULL
     }
 
@@ -82,7 +84,7 @@ function Terminate()
 {
     if (!initialized)
     {
-        NS.System.PrintLine("Graphics not initialized!")
+        System.PrintLine("Graphics not initialized!")
         return NULL
     }
 

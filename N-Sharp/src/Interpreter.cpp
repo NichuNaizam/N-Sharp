@@ -25,27 +25,38 @@ NSharpVariable Interpreter::runFunction(const string& str, vector<NSharpVariable
 			NSharpClass c = anyAsClass(value);
 
 			if (c.first.find(functionName) != c.first.end()) {
-				pair<vector<string>, vector<string>> data = c.first[functionName];
-				vector<string> parameters = data.first;
-				vector<string> functionCode = data.second;
+				map<string, pair<vector<string>, vector<string>>> classFunctions = c.first;
+				vector<string> parameters = classFunctions[functionName].first;
+				vector<string> functionCode = classFunctions[functionName].second;
 				NSharpVariable returnValue = createVariable("NULL", NULL);
 
 				if (arguments.size() < parameters.size() || arguments.size() > parameters.size()) {
 					logScriptError("function " + str + " does not take " + to_string(arguments.size()) + " arguments", getLine());
 				}
 
+				// Loading the class variables
 				if ((int)arguments.size() > 0) {
 					for (int i = 0; i < (int)parameters.size(); i++) {
 						localVariables[scopeHeight + 1][parameters[i]] = arguments[i];
 					}
 				}
 
+				// Loading the class functions
+				map<string, NSharpFunction> functionsTemp = functions;
+
+				for (pair<string, NSharpFunction> f : classFunctions) {
+					functions.insert(f);
+				}
+				
 				string temp = otherVariableName;
 				otherVariableName = fileName;
-				returnValue = start(functionCode);
+
+				returnValue = start(functionCode); // Run The code
+				
 				otherVariableName = temp;
 
-				localVariables[scopeHeight + 1].clear();
+				localVariables[scopeHeight + 1].clear(); // Reset the variables
+				functions = functionsTemp; // Reset the functions
 
 #if PRINT_LOGS
 				logInfo("function " + trim(str) + " has been executed, return value: " + anyAsString(returnValue.second));
@@ -60,27 +71,44 @@ NSharpVariable Interpreter::runFunction(const string& str, vector<NSharpVariable
 		else {
 			if (otherFiles.find(fileName) != otherFiles.end()) {
 				if (otherFiles[fileName].first.find(functionName) != otherFiles[fileName].first.end()) {
-					pair<vector<string>, vector<string>> data = otherFiles[fileName].first[functionName];
-					vector<string> parameters = data.first;
-					vector<string> functionCode = data.second;
+					map<string, pair<vector<string>, vector<string>>> classFunctions = otherFiles[fileName].first;
+					vector<string> parameters = classFunctions[functionName].first;
+					vector<string> functionCode = classFunctions[functionName].second;
 					NSharpVariable returnValue = createVariable("NULL", NULL);
 
 					if (arguments.size() < parameters.size() || arguments.size() > parameters.size()) {
 						logScriptError("Class function " + str + " does not take " + to_string(arguments.size()) + " arguments", getLine());
 					}
 
+					// Loading the class variables
 					if ((int)arguments.size() > 0) {
 						for (int i = 0; i < (int)parameters.size(); i++) {
 							localVariables[scopeHeight + 1][parameters[i]] = arguments[i];
 						}
 					}
 
-					string temp = otherClassName;
-					otherClassName = fileName;
-					returnValue = start(functionCode);
-					otherClassName = temp;
+					// Loading the class functions
+					map<string, NSharpFunction> functionsTemp = functions;
 
-					localVariables[scopeHeight + 1].clear();
+					for (pair<string, NSharpFunction> f : classFunctions) {
+						functions.insert(f);
+					}
+
+					string temp = otherVariableName;
+					otherVariableName = fileName;
+
+					returnValue = start(functionCode); // Run The code
+
+					otherVariableName = temp;
+
+					localVariables[scopeHeight + 1].clear(); // Reset the variables
+					functions = functionsTemp; // Reset the functions
+
+#if PRINT_LOGS
+					logInfo("class Function " + trim(str) + " has been executed, return value: " + anyAsString(returnValue.second));
+#endif // PRINT_LOGS
+
+					return returnValue;
 
 #if PRINT_LOGS
 					logInfo("Class function " + trim(str) + " has been executed, return value: " + anyAsString(returnValue.second));

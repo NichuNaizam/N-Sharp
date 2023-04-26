@@ -1,10 +1,4 @@
 using NS.System
-using NS.Array
+using NS.Graphics
 
-System.PrintLine("Array Test")
-
-var array = Array.Create()
-array = Array.Push(array, "Hello")
-array = Array.Push(array, "World")
-System.PrintLine(array)
-System.PrintLine(Array.Get(array, 0) + ", " + Array.Get(array, 1))
+Graphics.Begin()

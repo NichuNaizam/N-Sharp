@@ -245,6 +245,53 @@ NSharpVariable NSFunction(string name, vector<NSharpVariable> params, Interprete
 
 			return arr[index];
 		}
+		else if (name == "NS.Array._Size_") {
+			if (params.size() != 1) throw exception();
+
+			vector<NSharpVariable> arr = anyAsArray(params[0].second);
+			return createVariable("int", (int)arr.size());
+		}
+		else if (name == "NS.Array._Pop_") {
+			if (params.size() != 1) throw exception();
+
+			vector<NSharpVariable> arr = anyAsArray(params[0].second);
+			arr.pop_back();
+
+			return createVariable("array", arr);
+		}
+		else if (name == "NS.Array._Concat_") {
+			if (params.size() != 2) throw exception();
+
+			vector<NSharpVariable> arr1 = anyAsArray(params[0].second);
+			vector<NSharpVariable> arr2 = anyAsArray(params[1].second);
+			vector<NSharpVariable> newArr = arr1;
+
+			for (NSharpVariable v : arr2) {
+				newArr.push_back(v);
+			}
+
+			return createVariable("array", newArr);
+		}
+		else if (name == "NS.Array._Remove_") {
+			if (params.size() != 2) throw exception();
+
+			vector<NSharpVariable> arr = anyAsArray(params[0].second);
+			int index = anyAsInt(params[1].second);
+
+			arr.erase(arr.begin() + index);
+
+			return createVariable("array", arr);
+		}
+		else if (name == "NS.Array._Set_") {
+			if (params.size() != 3) throw exception();
+
+			vector<NSharpVariable> arr = anyAsArray(params[0].second);
+			NSharpVariable v = params[1];
+			int index = anyAsInt(params[2].second);
+
+			arr[index] = v;
+			return createVariable("array", arr);
+		}
 	}
 	catch (exception) {
 		logScriptError("Function " + name + " does not take " + to_string(params.size()) + " arguments", interpreter.getLine());
